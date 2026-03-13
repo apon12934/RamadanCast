@@ -1,0 +1,24 @@
+{
+  "name": "RmadanCast",
+  "short_name": "RmadanCast",
+  "description": "Sehri & Iftar Countdown Timer & Voice Announcer for Ramadan 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo/RmadanCast.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo/RmadanCast.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
