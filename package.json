@@ -1,7 +1,7 @@
 {
-  "name": "sehricast",
+  "name": "ramadancast",
   "version": "1.0.0",
-  "description": "SehriCast — Premium Sehri Countdown Timer & Voice Announcer",
+  "description": "RamadanCast — Premium Sehri & Iftar Countdown Timer & Voice Announcer",
   "type": "module",
   "scripts": {
     "dev": "vite",
