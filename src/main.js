@@ -380,6 +380,12 @@ function init() {
       activeAudio.pause();
       activeAudio = null;
     }
+
+    // Trigger announcement immediately when turned ON
+    if (state.voiceEnabled) {
+      state.lastAnnouncedMinute = -1; // Force immediate announcement
+      updateCountdown();
+    }
   });
 }
 
