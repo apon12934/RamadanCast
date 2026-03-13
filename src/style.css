@@ -285,65 +285,45 @@ body.lang-bn .countdown-segment {
   color: #ffffff;
 }
 
-/* ─── Start Button ─── */
-.start-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.875rem 1.5rem;
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: white;
-  background: var(--progress-gradient);
-  border: 1px solid color-mix(in srgb, var(--glow-color) 40%, transparent);
-  border-radius: 1rem;
-  cursor: pointer;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 1.5s ease;
-  box-shadow: 0 4px 20px var(--glow-color), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+/* ─── Premium Welcome Overlay ─── */
+#welcomeOverlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.start-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 30px var(--glow-color), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
 }
 
-.start-button:active {
-  transform: translateY(0);
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.02); }
 }
 
-.start-button-glow {
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.5));
+}
+
+#startExperienceBtn::before {
+  content: "";
   position: absolute;
-  inset: -2px;
-  background: var(--progress-gradient);
-  border-radius: inherit;
-  z-index: -1;
+  inset: 0;
+  background: white;
   opacity: 0;
   transition: opacity 0.3s ease;
-  filter: blur(8px);
 }
 
-.start-button:hover .start-button-glow {
-  opacity: 1;
-}
-
-.start-button.active {
-  background: linear-gradient(135deg, #059669, #10b981);
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.start-button.active:hover {
-  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.start-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
+#startExperienceBtn:active::before {
+  opacity: 0.15;
 }
 
 /* ─── Sehri ended state ─── */

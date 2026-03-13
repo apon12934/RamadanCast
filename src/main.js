@@ -91,7 +91,7 @@ function cacheDom() {
     'subtitle', 'dateLabel', 'currentDate', 'sehriLabel', 'sehriTime',
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
-    'currentLangLabel', 'voiceStatusLabel',
+    'currentLangLabel', 'voiceStatusLabel', 'welcomeOverlay', 'startExperienceBtn',
   ];
   ids.forEach((id) => { els[id] = $(id); });
 }
@@ -351,11 +351,22 @@ function init() {
     updateCountdown();
   }, 1000);
 
-  // ─── Audio Unlock Handler ───
+  // ─── Premium Welcome Experience (Audio Unlock) ───
   // Modern browsers block audio autoplay until the user interacts with the page.
-  window.addEventListener('click', () => {
-    console.log("Audio system unlocked by user interaction.");
-    if (state.voiceEnabled && state.lastAnnouncedMinute === -1) {
+  els.startExperienceBtn.addEventListener('click', () => {
+    console.log("Audio system unlocked via Welcome Overlay.");
+    
+    // Fade out the overlay
+    els.welcomeOverlay.classList.add('fade-out');
+    
+    // Remove from DOM after transition
+    setTimeout(() => {
+      els.welcomeOverlay.remove();
+    }, 1000);
+
+    // Initial audio trigger: Tell them the time immediately
+    if (state.voiceEnabled) {
+      state.lastAnnouncedMinute = -1; // Reset to force immediate announcement
       updateCountdown();
     }
   }, { once: true });
