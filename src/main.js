@@ -92,6 +92,7 @@ function cacheDom() {
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
     'currentLangLabel', 'voiceStatusLabel', 'welcomeOverlay', 'startExperienceBtn',
+    'installBtn'
   ];
   ids.forEach((id) => { els[id] = $(id); });
 }
@@ -416,14 +417,45 @@ if ('serviceWorker' in navigator) {
   console.warn('[PWA] Service Worker not supported in this browser');
 }
 
-// ─── PWA: Install Prompt (Browser Popup) ───
+// ─── PWA: Install Prompt (Browser Popup & Custom Button) ───
+let deferredPrompt;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt event fired - install prompt available');
-  // Don't prevent default - let browser show native prompt
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = e;
+  // Update UI notify the user they can install the PWA
+  if (els.installBtn) {
+    els.installBtn.classList.remove('hidden');
+    els.installBtn.classList.add('flex');
+    
+    // Add click event to our custom button
+    els.installBtn.addEventListener('click', async () => {
+      // Hide the app provided install promotion
+      els.installBtn.classList.add('hidden');
+      els.installBtn.classList.remove('flex');
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[PWA] User response to the install prompt: ${outcome}`);
+      // We've used the prompt, and can't use it again, throw it away
+      deferredPrompt = null;
+    });
+  }
 });
 
 window.addEventListener('appinstalled', () => {
   console.log('[PWA] App installed successfully');
+  // Hide the install button if it's still visible
+  if (els.installBtn) {
+    els.installBtn.classList.add('hidden');
+    els.installBtn.classList.remove('flex');
+  }
+  // Clear the deferredPrompt so it can be garbage collected
+  deferredPrompt = null;
 });
 
 // ─── Debugging: Check PWA Readiness ───
