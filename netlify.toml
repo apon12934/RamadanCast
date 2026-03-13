@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/api/tts/*"
+  to = "https://translate.google.com/translate_tts/:splat"
+  status = 200
+  force = true
