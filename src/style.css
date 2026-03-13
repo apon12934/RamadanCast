@@ -320,6 +320,23 @@ body.lang-bn .countdown-segment {
   transform: translateY(-1px);
 }
 
+/* ─── Loading Pulse ─── */
+.loading-pulse .countdown-segment {
+  animation: loading-fade 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* ─── API Error Message ─── */
+.api-error {
+  color: #fca5a5 !important;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
 /* ─── Sehri ended state ─── */
 .countdown-ended .countdown-segment {
   background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #b91c1c 100%);

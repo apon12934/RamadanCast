@@ -1,85 +1,62 @@
-// ─── Ramadan 2026 Sehri End & Iftar Start Times (Dhaka) ───
-const RAMADAN_DATA = {
-  '2026-02-19': { sehri: '05:12', iftar: '17:58' },
-  '2026-02-20': { sehri: '05:11', iftar: '17:58' },
-  '2026-02-21': { sehri: '05:11', iftar: '17:59' },
-  '2026-02-22': { sehri: '05:10', iftar: '17:59' },
-  '2026-02-23': { sehri: '05:09', iftar: '18:00' },
-  '2026-02-24': { sehri: '05:08', iftar: '18:00' },
-  '2026-02-25': { sehri: '05:08', iftar: '18:01' },
-  '2026-02-26': { sehri: '05:07', iftar: '18:01' },
-  '2026-02-27': { sehri: '05:06', iftar: '18:02' },
-  '2026-02-28': { sehri: '05:05', iftar: '18:02' },
-  '2026-03-01': { sehri: '05:05', iftar: '18:03' },
-  '2026-03-02': { sehri: '05:04', iftar: '18:03' },
-  '2026-03-03': { sehri: '05:03', iftar: '18:04' },
-  '2026-03-04': { sehri: '05:02', iftar: '18:04' },
-  '2026-03-05': { sehri: '05:01', iftar: '18:05' },
-  '2026-03-06': { sehri: '05:00', iftar: '18:05' },
-  '2026-03-07': { sehri: '04:59', iftar: '18:06' },
-  '2026-03-08': { sehri: '04:58', iftar: '18:06' },
-  '2026-03-09': { sehri: '04:57', iftar: '18:07' },
-  '2026-03-10': { sehri: '04:57', iftar: '18:07' },
-  '2026-03-11': { sehri: '04:56', iftar: '18:07' },
-  '2026-03-12': { sehri: '04:55', iftar: '18:08' },
-  '2026-03-13': { sehri: '04:54', iftar: '18:08' },
-  '2026-03-14': { sehri: '04:53', iftar: '18:09' },
-  '2026-03-15': { sehri: '04:52', iftar: '18:09' },
-  '2026-03-16': { sehri: '04:51', iftar: '18:10' },
-  '2026-03-17': { sehri: '04:50', iftar: '18:10' },
-  '2026-03-18': { sehri: '04:49', iftar: '18:10' },
-  '2026-03-19': { sehri: '04:48', iftar: '18:11' },
-  '2026-03-20': { sehri: '04:47', iftar: '18:11' }
-};
+// ─── Aladhan API Configuration ───
+const API_BASE = 'https://api.aladhan.com/v1/timingsByCity';
+const API_PARAMS = 'city=Dhaka&country=Bangladesh&method=1';
 
 // ─── i18n Strings ───
 const STRINGS = {
   en: {
-    subtitle: 'Ramadan 2026 • Dhaka',
     dateLabel: "Today's Date",
     sehriLabel: 'Sehri Ends At',
     iftarLabel: 'Iftar Starts At',
     countdownLabelSehri: 'Time until Sehri',
     countdownLabelIftar: 'Time until Iftar',
-    startBtn: 'Start Timer & Enable Audio',
-    stopBtn: 'Timer Running — Tap to Stop',
     langLabel: 'English',
     voiceOn: 'On',
     voiceOff: 'Off',
-    noData: 'No data for today',
+    noData: 'Waiting for next prayer time…',
     announceSehri: (min) => `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Sehri.`,
     announceIftar: (min) => `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Iftar.`,
-    notRamadan: 'No Ramadan data found.',
+    loading: 'Fetching prayer times…',
+    apiError: 'Unable to sync live times. Please check your connection.',
+    waitingTomorrow: 'Today\'s times have ended. Refreshing at midnight…',
   },
   bn: {
-    subtitle: 'রমজান ২০২৬ • ঢাকা',
     dateLabel: 'আজকের তারিখ',
     sehriLabel: 'সেহরি শেষ',
     iftarLabel: 'ইফতার শুরু',
     countdownLabelSehri: 'সেহরির বাকি সময়',
     countdownLabelIftar: 'ইফতারের বাকি সময়',
-    startBtn: 'টাইমার শুরু করুন ও অডিও চালু করুন',
-    stopBtn: 'টাইমার চলছে — বন্ধ করতে চাপুন',
     langLabel: 'বাংলা',
     voiceOn: 'চালু',
     voiceOff: 'বন্ধ',
-    noData: 'আজকের তথ্য নেই',
+    noData: 'পরবর্তী নামাজের সময় অপেক্ষা করছে…',
     announceSehri: (min) => `সেহরির আর মাত্র ${min} মিনিট বাকি আছে।`,
     announceIftar: (min) => `ইফতারের আর মাত্র ${min} মিনিট বাকি আছে।`,
-    notRamadan: 'রমজানের তথ্য নেই।',
+    loading: 'নামাজের সময় সংগ্রহ হচ্ছে…',
+    apiError: 'সময় সিঙ্ক করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।',
+    waitingTomorrow: 'আজকের সময় শেষ হয়েছে। মধ্যরাতে রিফ্রেশ হবে…',
   },
 };
 
 // ─── State ───
 const state = {
-  lang: 'bn', // Default to Bangla
-  voiceEnabled: true, // Default to Voice ON
+  lang: 'bn',
+  voiceEnabled: true,
   timerStarted: false,
   lastAnnouncedMinute: -1,
   countdownInterval: null,
   targetTime: null,
-  activeDateKey: null,
   phase: 'sehri', // 'sehri' or 'iftar'
+  isLoading: true,
+  apiError: null,
+  // Live API data
+  sehriTime: null,    // Date object
+  iftarTime: null,    // Date object
+  sehriTimeStr: null, // "HH:MM" string
+  iftarTimeStr: null, // "HH:MM" string
+  hijriDate: null,    // { day, month, year, monthEn }
+  gregorianDate: null,
+  midnightTimeout: null,
 };
 
 // ─── DOM Elements ───
@@ -102,70 +79,177 @@ function pad(n) {
   return String(n).padStart(2, '0');
 }
 
-function getDateKey(date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-function getTodayKey() {
-  return getDateKey(new Date());
-}
-
-function getPhaseTime(dateKey, phase) {
-  const data = RAMADAN_DATA[dateKey];
-  if (!data) return null;
-  const timeStr = phase === 'sehri' ? data.sehri : data.iftar;
-  const [h, m] = timeStr.split(':').map(Number);
-  const [y, mo, d] = dateKey.split('-').map(Number);
-  return new Date(y, mo - 1, d, h, m, 0, 0);
-}
-
-function formatDateDisplay(dateKey) {
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
+function formatDateDisplay(date) {
   return date.toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 }
 
-function formatDateDisplayBn(dateKey) {
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
+function formatDateDisplayBn(date) {
   return date.toLocaleDateString('bn-BD', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 }
 
-// ─── Find the active Ramadan phase ───
-function determinePhase() {
+/**
+ * Parse a "HH:MM" time string into a Date object for today.
+ */
+function parseTimeToday(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
   const now = new Date();
-  const todayKey = getTodayKey();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+}
 
-  if (RAMADAN_DATA[todayKey]) {
-    const sehriToday = getPhaseTime(todayKey, 'sehri');
-    const iftarToday = getPhaseTime(todayKey, 'iftar');
+// ─── Aladhan API Fetch ───
+async function fetchTodayTimings() {
+  state.isLoading = true;
+  state.apiError = null;
+  updateLoadingUI();
 
-    if (now < sehriToday) {
-      return { dateKey: todayKey, phase: 'sehri', targetTime: sehriToday };
-    } else if (now >= sehriToday && now < iftarToday) {
-      return { dateKey: todayKey, phase: 'iftar', targetTime: iftarToday };
+  try {
+    const response = await fetch(`${API_BASE}?${API_PARAMS}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const json = await response.json();
+
+    if (json.code !== 200 || !json.data?.timings) {
+      throw new Error('Invalid API response');
     }
+
+    const { timings, date } = json.data;
+
+    // Parse times
+    state.sehriTimeStr = timings.Imsak;  // e.g. "04:44"
+    state.iftarTimeStr = timings.Maghrib; // e.g. "18:07"
+    state.sehriTime = parseTimeToday(state.sehriTimeStr);
+    state.iftarTime = parseTimeToday(state.iftarTimeStr);
+
+    // Parse Hijri date
+    if (date?.hijri) {
+      state.hijriDate = {
+        day: date.hijri.day,
+        month: date.hijri.month.en,
+        monthAr: date.hijri.month.ar,
+        monthNumber: date.hijri.month.number,
+        year: date.hijri.year,
+      };
+    }
+
+    // Parse Gregorian date
+    if (date?.gregorian) {
+      const g = date.gregorian;
+      state.gregorianDate = new Date(
+        Number(g.year), Number(g.month.number) - 1, Number(g.day)
+      );
+    } else {
+      state.gregorianDate = new Date();
+    }
+
+    state.isLoading = false;
+    state.apiError = null;
+
+    console.log(`[API] Fetched: Sehri=${state.sehriTimeStr}, Iftar=${state.iftarTimeStr}`);
+
+    // Determine the active phase and start/continue countdown
+    determineAndSetPhase();
+    updateLabels();
+    updateCountdown();
+
+  } catch (error) {
+    console.error('[API] Fetch failed:', error);
+    state.isLoading = false;
+    state.apiError = error.message;
+    updateErrorUI();
   }
 
-  // If today's Iftar has passed (or it's not today), find the NEXT available Sehri
-  const dates = Object.keys(RAMADAN_DATA).sort();
-  for (const dateKey of dates) {
-    if (dateKey > todayKey) {
-      return { dateKey, phase: 'sehri', targetTime: getPhaseTime(dateKey, 'sehri') };
+  // Schedule next fetch at midnight
+  scheduleMidnightRefresh();
+}
+
+// ─── Midnight Auto-Refresh ───
+function scheduleMidnightRefresh() {
+  if (state.midnightTimeout) clearTimeout(state.midnightTimeout);
+
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5); // 5 seconds past midnight for safety
+  const msUntilMidnight = midnight - now;
+
+  console.log(`[Refresh] Scheduled in ${Math.round(msUntilMidnight / 60000)} minutes (at midnight).`);
+
+  state.midnightTimeout = setTimeout(() => {
+    console.log('[Refresh] Midnight reached — re-fetching prayer times.');
+    state.lastAnnouncedMinute = -1;
+    fetchTodayTimings();
+  }, msUntilMidnight);
+}
+
+// ─── Phase Determination (API-driven) ───
+function determineAndSetPhase() {
+  const now = new Date();
+
+  if (state.sehriTime && state.iftarTime) {
+    if (now < state.sehriTime) {
+      state.phase = 'sehri';
+      state.targetTime = state.sehriTime;
+    } else if (now >= state.sehriTime && now < state.iftarTime) {
+      state.phase = 'iftar';
+      state.targetTime = state.iftarTime;
+    } else {
+      // Both times have passed today — waiting for tomorrow
+      state.phase = 'iftar'; // Keep iftar theme until midnight
+      state.targetTime = null;
     }
+  } else {
+    state.targetTime = null;
   }
 
-  return { dateKey: null, phase: null, targetTime: null };
+  updateTheme();
+}
+
+// ─── UI: Loading State ───
+function updateLoadingUI() {
+  if (!els.hours) return; // DOM not ready yet
+  els.hours.textContent = '--';
+  els.minutes.textContent = '--';
+  els.seconds.textContent = '--';
+  els.countdownDisplay.classList.add('loading-pulse');
+  els.statusMessage.textContent = STRINGS[state.lang].loading;
+  els.statusMessage.classList.remove('api-error');
+}
+
+// ─── UI: Error State ───
+function updateErrorUI() {
+  if (!els.hours) return;
+  els.hours.textContent = '--';
+  els.minutes.textContent = '--';
+  els.seconds.textContent = '--';
+  els.countdownDisplay.classList.remove('loading-pulse');
+  els.statusMessage.textContent = STRINGS[state.lang].apiError;
+  els.statusMessage.classList.add('api-error');
 }
 
 // ─── UI Updates ───
+function buildSubtitle() {
+  const h = state.hijriDate;
+  if (h && h.monthNumber === 9) {
+    // It's Ramadan!
+    if (state.lang === 'bn') {
+      return `রমজান ${h.day}, ${h.year} • ঢাকা`;
+    }
+    return `Ramadan ${h.day}, ${h.year} • Dhaka`;
+  }
+  // Not Ramadan — show generic Hijri info
+  if (h) {
+    if (state.lang === 'bn') {
+      return `${h.month} ${h.day}, ${h.year} • ঢাকা`;
+    }
+    return `${h.month} ${h.day}, ${h.year} • Dhaka`;
+  }
+  return state.lang === 'bn' ? 'ঢাকা' : 'Dhaka';
+}
+
 function updateLabels() {
   const s = STRINGS[state.lang];
-  els.subtitle.textContent = s.subtitle;
+  els.subtitle.textContent = buildSubtitle();
   els.dateLabel.textContent = s.dateLabel;
   els.sehriLabel.textContent = state.phase === 'sehri' ? s.sehriLabel : s.iftarLabel;
   els.countdownLabel.textContent = state.phase === 'sehri' ? s.countdownLabelSehri : s.countdownLabelIftar;
@@ -180,30 +264,41 @@ function updateLabels() {
   }
 
   // Update date display
-  if (state.activeDateKey) {
+  if (state.gregorianDate) {
     els.currentDate.textContent = state.lang === 'bn'
-      ? formatDateDisplayBn(state.activeDateKey)
-      : formatDateDisplay(state.activeDateKey);
+      ? formatDateDisplayBn(state.gregorianDate)
+      : formatDateDisplay(state.gregorianDate);
+  }
 
-    const timeStr = state.phase === 'sehri' 
-      ? RAMADAN_DATA[state.activeDateKey].sehri 
-      : RAMADAN_DATA[state.activeDateKey].iftar;
-      
-    if (timeStr) {
-      const [h, m] = timeStr.split(':').map(Number);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
-      els.sehriTime.textContent = `${pad(h12)}:${pad(m)} ${period}`;
-    }
+  // Update the time display for the active phase
+  const timeStr = state.phase === 'sehri' ? state.sehriTimeStr : state.iftarTimeStr;
+  if (timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    els.sehriTime.textContent = `${pad(h12)}:${pad(m)} ${period}`;
   }
 }
 
 function updateCountdown() {
+  if (state.isLoading) return; // Don't update during loading
+
   if (!state.targetTime) {
+    // Both times have passed for today
     els.hours.textContent = '00';
     els.minutes.textContent = '00';
     els.seconds.textContent = '00';
-    els.statusMessage.textContent = STRINGS[state.lang].noData;
+    els.countdownDisplay.classList.remove('loading-pulse');
+    els.countdownDisplay.classList.add('countdown-ended');
+    els.countdownDisplay.classList.remove('countdown-urgent');
+    els.statusMessage.textContent = STRINGS[state.lang].waitingTomorrow;
+    els.statusMessage.classList.remove('api-error');
+    els.progressBar.style.width = '100%';
+
+    if (activeAudio) {
+      activeAudio.pause();
+      activeAudio = null;
+    }
     return;
   }
 
@@ -211,34 +306,26 @@ function updateCountdown() {
   const diff = state.targetTime - now;
 
   if (diff <= 0) {
-    // Phase ended — instantly transition to next phase
-    const nextPhaseObj = determinePhase();
-    if (nextPhaseObj.dateKey && (nextPhaseObj.dateKey !== state.activeDateKey || nextPhaseObj.phase !== state.phase)) {
-      state.activeDateKey = nextPhaseObj.dateKey;
-      state.phase = nextPhaseObj.phase;
-      state.targetTime = nextPhaseObj.targetTime;
+    // Phase ended — transition to next phase
+    if (state.phase === 'sehri' && state.iftarTime && now < state.iftarTime) {
+      // Sehri ended, switch to Iftar countdown
+      state.phase = 'iftar';
+      state.targetTime = state.iftarTime;
       state.lastAnnouncedMinute = -1;
       updateLabels();
       updateTheme();
-      return; // will pick up new countdown on next tick
+      return; // next tick picks it up
     }
 
-    // No more dates (Ramadan is over)
-    els.hours.textContent = '00';
-    els.minutes.textContent = '00';
-    els.seconds.textContent = '00';
-    els.countdownDisplay.classList.add('countdown-ended');
-    els.countdownDisplay.classList.remove('countdown-urgent');
-    els.statusMessage.textContent = STRINGS[state.lang].notRamadan;
-    els.progressBar.style.width = '100%';
-
-    // Stop voice
-    if (activeAudio) {
-      activeAudio.pause();
-      activeAudio = null;
-    }
+    // Iftar also ended (or sehri was already the last phase)
+    state.targetTime = null;
+    determineAndSetPhase();
+    updateLabels();
+    updateCountdown(); // Re-run with null target to show waiting state
     return;
   }
+
+  els.countdownDisplay.classList.remove('loading-pulse');
 
   const totalSeconds = Math.floor(diff / 1000);
   const h = Math.floor(totalSeconds / 3600);
@@ -251,6 +338,7 @@ function updateCountdown() {
 
   // Status message (keep it blank for minimal elegant look)
   els.statusMessage.textContent = '';
+  els.statusMessage.classList.remove('api-error');
 
   // Urgent mode (< 5 minutes)
   const totalMin = Math.floor(diff / 60000);
@@ -262,8 +350,7 @@ function updateCountdown() {
     els.countdownDisplay.classList.remove('countdown-ended');
   }
 
-  // Progress bar: calculate progress across the 24hr or phase window
-  // For simplicity, we calculate progress of the last 12 hours leading up to the target
+  // Progress bar
   const windowStart = new Date(state.targetTime.getTime() - 12 * 60 * 60 * 1000);
   const totalDuration = state.targetTime - windowStart;
   const elapsed = now - windowStart;
@@ -273,7 +360,7 @@ function updateCountdown() {
   // Voice announcement (every 1 minute)
   if (state.voiceEnabled && state.timerStarted && totalMin !== state.lastAnnouncedMinute && totalMin >= 0) {
     state.lastAnnouncedMinute = totalMin;
-    const announceStr = state.phase === 'sehri' 
+    const announceStr = state.phase === 'sehri'
       ? STRINGS[state.lang].announceSehri(totalMin)
       : STRINGS[state.lang].announceIftar(totalMin);
     speak(announceStr);
@@ -286,30 +373,22 @@ let activeAudio = null;
 async function speak(text) {
   if (!state.voiceEnabled) return;
 
-  // Cancel any currently playing audio
   if (activeAudio) {
     activeAudio.pause();
     activeAudio = null;
   }
 
-  // Use natural-sounding language codes for the endpoint
   const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
-  
+
   try {
-    // Route through our local proxy (/api/tts) to bypass CORS blocks
     const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
-    
-    // Create Audio object directly with the URL to bypass fetch CORS limits.
-    // The browser natively handles cross-origin media loading for <audio>.
     activeAudio = new Audio(url);
-    
-    // Clean up when done
+
     activeAudio.onended = () => {
       activeAudio = null;
     };
-    
+
     await activeAudio.play().catch(e => {
-      // Ignore abort errors caused by intentional interruptions (e.g., skip to next speech)
       if (e.name !== 'AbortError') throw e;
     });
   } catch (error) {
@@ -331,20 +410,17 @@ function updateTheme() {
 function init() {
   cacheDom();
 
-  // Determine active phase based on current time
-  const currentPhase = determinePhase();
-  state.activeDateKey = currentPhase.dateKey;
-  state.phase = currentPhase.phase;
-  state.targetTime = currentPhase.targetTime;
-
   updateTheme();
-  
+
   // Synchronize UI Toggles with Initial State
   els.langToggle.checked = (state.lang === 'bn');
   els.voiceToggle.checked = state.voiceEnabled;
 
-  updateLabels();
-  updateCountdown(); // Initial display
+  // Show loading state immediately
+  updateLoadingUI();
+
+  // Fetch today's prayer times from API
+  fetchTodayTimings();
 
   // ─── Automatic Activation ───
   state.timerStarted = true;
@@ -353,21 +429,17 @@ function init() {
   }, 1000);
 
   // ─── Premium Welcome Experience (Audio Unlock) ───
-  // Modern browsers block audio autoplay until the user interacts with the page.
   els.startExperienceBtn.addEventListener('click', () => {
     console.log("Audio system unlocked via Welcome Overlay.");
-    
-    // Fade out the overlay
+
     els.welcomeOverlay.classList.add('fade-out');
-    
-    // Remove from DOM after transition
+
     setTimeout(() => {
       els.welcomeOverlay.remove();
     }, 1000);
 
-    // Initial audio trigger: Tell them the time immediately
     if (state.voiceEnabled) {
-      state.lastAnnouncedMinute = -1; // Reset to force immediate announcement
+      state.lastAnnouncedMinute = -1;
       updateCountdown();
     }
   }, { once: true });
@@ -377,7 +449,7 @@ function init() {
   // Language toggle
   els.langToggle.addEventListener('change', (e) => {
     state.lang = e.target.checked ? 'bn' : 'en';
-    state.lastAnnouncedMinute = -1; // Reset to allow re-announcement
+    state.lastAnnouncedMinute = -1;
     updateLabels();
     updateCountdown();
   });
@@ -394,9 +466,8 @@ function init() {
       activeAudio = null;
     }
 
-    // Trigger announcement immediately when turned ON
     if (state.voiceEnabled) {
-      state.lastAnnouncedMinute = -1; // Force immediate announcement
+      state.lastAnnouncedMinute = -1;
       updateCountdown();
     }
   });
@@ -422,26 +493,18 @@ let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt event fired - install prompt available');
-  // Prevent the mini-infobar from appearing on mobile
   e.preventDefault();
-  // Stash the event so it can be triggered later.
   deferredPrompt = e;
-  // Update UI notify the user they can install the PWA
   if (els.installBtn) {
     els.installBtn.classList.remove('hidden');
     els.installBtn.classList.add('flex');
-    
-    // Add click event to our custom button
+
     els.installBtn.addEventListener('click', async () => {
-      // Hide the app provided install promotion
       els.installBtn.classList.add('hidden');
       els.installBtn.classList.remove('flex');
-      // Show the install prompt
       deferredPrompt.prompt();
-      // Wait for the user to respond to the prompt
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`[PWA] User response to the install prompt: ${outcome}`);
-      // We've used the prompt, and can't use it again, throw it away
       deferredPrompt = null;
     });
   }
@@ -449,12 +512,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 window.addEventListener('appinstalled', () => {
   console.log('[PWA] App installed successfully');
-  // Hide the install button if it's still visible
   if (els.installBtn) {
     els.installBtn.classList.add('hidden');
     els.installBtn.classList.remove('flex');
   }
-  // Clear the deferredPrompt so it can be garbage collected
   deferredPrompt = null;
 });
 
