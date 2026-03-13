@@ -18,6 +18,7 @@ body.theme-sehri {
   --progress-gradient: linear-gradient(90deg, #a855f7 0%, #8b5cf6 50%, #6366f1 100%);
   --crescent-stop-1: #c084fc;
   --crescent-stop-2: #818cf8;
+  --colon-color: rgba(167, 139, 250, 0.4);
 }
 
 body.theme-iftar {
@@ -30,6 +31,7 @@ body.theme-iftar {
   --progress-gradient: linear-gradient(90deg, #f43f5e 0%, #f97316 50%, #eab308 100%);
   --crescent-stop-1: #fb923c;
   --crescent-stop-2: #ea580c;
+  --colon-color: rgba(251, 146, 60, 0.4);
 }
 
 .font-outfit {
@@ -173,8 +175,9 @@ body.lang-bn .countdown-segment {
   font-weight: 700;
   font-size: clamp(2.5rem, 10vw, 5rem);
   line-height: 1;
-  color: rgba(167, 139, 250, 0.4);
+  color: var(--colon-color);
   animation: blink 1s ease-in-out infinite;
+  transition: color 1.5s ease;
 }
 
 @keyframes blink {
