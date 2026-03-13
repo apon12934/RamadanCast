@@ -410,36 +410,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ─── PWA: Install Prompt ───
-let deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  const banner = document.getElementById('installBanner');
-  if (banner) banner.classList.remove('hidden');
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredInstallPrompt = null;
-  const banner = document.getElementById('installBanner');
-  if (banner) banner.classList.add('hidden');
-});
-
 // ─── Boot ───
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-      if (!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      const { outcome } = await deferredInstallPrompt.userChoice;
-      deferredInstallPrompt = null;
-      if (outcome === 'accepted') {
-        document.getElementById('installBanner')?.classList.add('hidden');
-      }
-    });
-  }
-});
+document.addEventListener('DOMContentLoaded', init);
