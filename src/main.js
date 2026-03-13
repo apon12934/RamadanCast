@@ -337,6 +337,11 @@ function init() {
   state.targetTime = currentPhase.targetTime;
 
   updateTheme();
+  
+  // Synchronize UI Toggles with Initial State
+  els.langToggle.checked = (state.lang === 'bn');
+  els.voiceToggle.checked = state.voiceEnabled;
+
   updateLabels();
   updateCountdown(); // Initial display
 
