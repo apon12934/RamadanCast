@@ -286,44 +286,38 @@ body.lang-bn .countdown-segment {
 }
 
 /* ─── Premium Welcome Overlay ─── */
+.welcome-overlay {
+  background: rgba(5, 5, 15, 0.85);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
 #welcomeOverlay.fade-out {
   opacity: 0;
   pointer-events: none;
 }
 
-.animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
+.welcome-logo {
+  filter: drop-shadow(0 0 20px var(--glow-color));
+  animation: gentle-float 3s ease-in-out infinite;
 }
 
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.02); }
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+.welcome-btn {
+  background: var(--progress-gradient);
+  box-shadow: 0 4px 24px var(--glow-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.drop-shadow-glow {
-  filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.5));
-}
-
-#startExperienceBtn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: white;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-#startExperienceBtn:active::before {
-  opacity: 0.15;
+.welcome-btn:hover {
+  box-shadow: 0 6px 32px var(--glow-color);
+  transform: translateY(-1px);
 }
 
 /* ─── Sehri ended state ─── */

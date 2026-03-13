@@ -22,21 +22,12 @@
 <body class="min-h-screen overflow-x-hidden font-sans antialiased text-white relative">
 
   <!-- Premium Welcome Overlay (Audio Unlocker) -->
-  <div id="welcomeOverlay" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/40 backdrop-blur-3xl transition-opacity duration-1000">
-    <div class="text-center px-6 max-w-md animate-pulse-slow">
-      <div class="mb-6 flex justify-center">
-        <img src="/logo/RmadanCast.svg" alt="RmadanCast" class="w-24 h-24 drop-shadow-[0_0_28px_rgba(249,115,22,0.55)]" />
-      </div>
-      <h1 class="text-4xl sm:text-5xl font-bold text-white mb-2 tracking-tight">RmadanCast</h1>
-      <p class="text-white/60 mb-10 text-lg font-light">Experience the sacred countdown with AI Voice.</p>
-      
-      <button id="startExperienceBtn" class="group relative px-8 py-4 bg-orange-500 hover:bg-orange-400 text-white rounded-full font-semibold text-lg transition-all duration-300 shadow-xl shadow-orange-500/20 active:scale-95 overflow-hidden">
-        <span class="relative z-10 flex items-center gap-2">
-          <span>প্রবেশ করুন</span>
-          <span class="text-white/40">•</span>
-          <span>Enter Experience</span>
-        </span>
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+  <div id="welcomeOverlay" class="welcome-overlay fixed inset-0 z-[200] flex flex-col items-center justify-center transition-opacity duration-700">
+    <div class="text-center px-6">
+      <img src="/logo/RmadanCast.svg" alt="RmadanCast" class="w-16 h-16 mx-auto mb-5 welcome-logo" />
+      <h1 class="text-2xl sm:text-3xl font-outfit font-bold tracking-tight text-white/90 mb-8">RamadanCast</h1>
+      <button id="startExperienceBtn" class="welcome-btn px-7 py-3 rounded-full text-sm font-semibold text-white transition-all duration-300 active:scale-95">
+        প্রবেশ করুন • Enter
       </button>
     </div>
   </div>
