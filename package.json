@@ -1,16 +1,20 @@
 {
   "name": "ramadancast",
   "version": "1.0.0",
-  "description": "RamadanCast — Premium Sehri & Iftar Countdown Timer & Voice Announcer",
+  "description": "RamadanCast — Premium Sehri & Iftar Countdown Timer & Voice Announcer for Dhaka, Bangladesh",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["ramadan", "sehri", "iftar", "countdown", "pwa", "dhaka", "bangladesh", "prayer-times"],
+  "author": "Alamin Islam Apon",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apon12934/RamadanCast.git"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
