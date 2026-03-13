@@ -404,10 +404,31 @@ function init() {
 // ─── PWA: Service Worker Registration ───
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
-      console.warn('Service Worker registration failed:', err);
-    });
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => {
+        console.log('[PWA] Service Worker registered successfully:', reg);
+      })
+      .catch((err) => {
+        console.warn('[PWA] Service Worker registration failed:', err);
+      });
   });
+} else {
+  console.warn('[PWA] Service Worker not supported in this browser');
+}
+
+// ─── PWA: Install Prompt (Browser Popup) ───
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[PWA] beforeinstallprompt event fired - install prompt available');
+  // Don't prevent default - let browser show native prompt
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] App installed successfully');
+});
+
+// ─── Debugging: Check PWA Readiness ───
+if (navigator.onLine !== undefined) {
+  console.log('[PWA] Online status:', navigator.onLine ? 'Online' : 'Offline');
 }
 
 // ─── Boot ───

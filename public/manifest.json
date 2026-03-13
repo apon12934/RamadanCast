@@ -1,22 +1,24 @@
 {
-  "name": "RmadanCast",
+  "name": "RmadanCast - Sehri & Iftar Countdown Timer with AI Voice",
   "short_name": "RmadanCast",
-  "description": "Sehri & Iftar Countdown Timer & Voice Announcer for Ramadan 2026",
+  "description": "Premium Sehri & Iftar countdown timer and voice announcer for Ramadan 2026 with AI-powered time announcements",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#020617",
   "theme_color": "#f97316",
-  "orientation": "portrait-primary",
+  "categories": ["productivity", "lifestyle"],
   "icons": [
     {
       "src": "/logo/RmadanCast.svg",
-      "sizes": "any",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
       "src": "/logo/RmadanCast.svg",
-      "sizes": "any",
+      "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     }
