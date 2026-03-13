@@ -1,6 +1,7 @@
 // ─── Aladhan API Configuration ───
 const API_BASE = 'https://api.aladhan.com/v1/timingsByCity';
-const API_PARAMS = 'city=Dhaka&country=Bangladesh&method=1';
+// method=1 is Karachi (closest to South Asia), tune applies IFB exact offsets: Fajr -1 min (Sehri), Maghrib/Sunset +2 min (Iftar)
+const API_PARAMS = 'city=Dhaka&country=Bangladesh&method=1&tune=0,-1,0,0,0,2,2,0,0';
 
 // ─── i18n Strings ───
 const STRINGS = {
@@ -117,20 +118,34 @@ async function fetchTodayTimings() {
 
     const { timings, date } = json.data;
 
-    // Parse times
-    state.sehriTimeStr = timings.Imsak;  // e.g. "04:44"
-    state.iftarTimeStr = timings.Maghrib; // e.g. "18:07"
+    // Parse times (using IFB Tuned Times)
+    state.sehriTimeStr = timings.Fajr;  // IFB Sehri is Fajr time tuned by -1 min
+    state.iftarTimeStr = timings.Maghrib; // IFB Iftar is Maghrib time tuned by +2 min
     state.sehriTime = parseTimeToday(state.sehriTimeStr);
     state.iftarTime = parseTimeToday(state.iftarTimeStr);
 
-    // Parse Hijri date
+    // Parse Hijri date - Bangladesh moon sighting is typically 1 day behind API default
     if (date?.hijri) {
+      let d = parseInt(date.hijri.day) - 1;
+      let m = date.hijri.month.en;
+      let mNum = parseInt(date.hijri.month.number);
+      let y = parseInt(date.hijri.year);
+      
+      // Handle underflow if it is the 1st of the month
+      if (d <= 0) {
+        d = 29; // Rough fallback, assume previous month has 29 days
+        mNum = mNum - 1 === 0 ? 12 : mNum - 1;
+        if (mNum === 8) m = 'Shaʿbān';
+        if (mNum === 9) m = 'Ramaḍān';
+        if (mNum === 12) y -= 1;
+      }
+
       state.hijriDate = {
-        day: date.hijri.day,
-        month: date.hijri.month.en,
+        day: d,
+        month: m,
         monthAr: date.hijri.month.ar,
-        monthNumber: date.hijri.month.number,
-        year: date.hijri.year,
+        monthNumber: mNum,
+        year: y,
       };
     }
 
