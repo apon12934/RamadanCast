@@ -32,10 +32,13 @@ body.theme-iftar {
   font-family: 'Outfit', 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
-body.lang-bn, 
+body.lang-bn {
+  font-family: 'Inter', 'Anek Bangla', sans-serif;
+}
+
 body.lang-bn .font-outfit,
 body.lang-bn .countdown-segment {
-  font-family: 'Anek Bangla', 'Inter', sans-serif !important;
+  font-family: 'Outfit', 'Anek Bangla', sans-serif;
 }
 
 /* ─── Geometric Islamic Pattern Background ─── */
