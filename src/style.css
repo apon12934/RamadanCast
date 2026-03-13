@@ -254,12 +254,13 @@ body.lang-bn .countdown-segment {
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.625rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  z-index: 1;
+  z-index: 3;
   transition: opacity 0.3s ease, color 0.3s ease;
   display: flex;
   align-items: center;
+  pointer-events: none;
 }
 
 .toggle-label-left {
@@ -275,13 +276,13 @@ body.lang-bn .countdown-segment {
 }
 
 .toggle-switch input:checked ~ .toggle-slider .toggle-label-left {
-  opacity: 0.4;
-  color: rgba(255, 255, 255, 0.4);
+  opacity: 0.3;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .toggle-switch input:checked ~ .toggle-slider .toggle-label-right {
   opacity: 1;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
 }
 
 /* ─── Start Button ─── */

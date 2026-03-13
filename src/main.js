@@ -91,7 +91,7 @@ function cacheDom() {
     'subtitle', 'dateLabel', 'currentDate', 'sehriLabel', 'sehriTime',
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
-    'audioUnlockOverlay', 'currentLangLabel', 'voiceStatusLabel',
+    'currentLangLabel', 'voiceStatusLabel',
   ];
   ids.forEach((id) => { els[id] = $(id); });
 }
@@ -353,14 +353,9 @@ function init() {
 
   // ─── Audio Unlock Handler ───
   // Modern browsers block audio autoplay until the user interacts with the page.
-  // This invisible overlay captures the first click to "unlock" the audio system.
-  els.audioUnlockOverlay.addEventListener('click', () => {
-    els.audioUnlockOverlay.remove();
+  window.addEventListener('click', () => {
     console.log("Audio system unlocked by user interaction.");
-    
-    if (state.voiceEnabled) {
-      // Force an immediate announcement now that the browser permits it
-      state.lastAnnouncedMinute = -1;
+    if (state.voiceEnabled && state.lastAnnouncedMinute === -1) {
       updateCountdown();
     }
   }, { once: true });
