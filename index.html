@@ -7,7 +7,7 @@
   <meta name="description" content="RamadanCast is a premium Sehri and Iftar countdown timer and voice announcer for Ramadan 2026. Get accurate times for Dhaka with voice alerts in English and Bangla." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Anek+Bangla:wght@100..800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body class="min-h-screen overflow-x-hidden font-sans antialiased text-white relative">
@@ -24,10 +24,11 @@
   <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
 
     <!-- Header -->
-    <header class="text-center mb-6 sm:mb-10">
-      <div class="flex items-center justify-center gap-3 mb-2">
-        <div class="crescent-icon" aria-hidden="true">
-          <svg viewBox="0 0 40 40" width="40" height="40" fill="none">
+    <header class="text-center mb-6 sm:mb-10 w-full max-w-lg">
+      <div class="relative inline-block">
+        <!-- Absolutely positioned icon so it doesn't shift the centered text -->
+        <div class="crescent-icon absolute right-full mr-4 top-1/2 -translate-y-1/2" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
             <path d="M20 2a18 18 0 1 0 0 36 14 14 0 0 1 0-36z" fill="url(#crescentGrad)" />
             <defs>
               <linearGradient id="crescentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -41,11 +42,14 @@
           RamadanCast
         </h1>
       </div>
-      <p class="text-sm sm:text-base text-white/50 font-light tracking-wide" id="subtitle">Ramadan 2026 • Dhaka</p>
+      <p class="text-sm sm:text-base text-white/50 font-light tracking-wide mt-1" id="subtitle">Ramadan 2026 • Dhaka</p>
     </header>
 
     <!-- Main Card -->
     <main class="glass-card w-full max-w-lg sm:max-w-xl p-6 sm:p-10 mb-6 sm:mb-8">
+      
+      <!-- User Engagement Trigger (Required for audio autoplay) -->
+      <div id="audioUnlockOverlay" class="fixed inset-0 z-[100] cursor-pointer" aria-hidden="true"></div>
 
       <!-- Date & Sehri Info -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-white/10">
@@ -69,7 +73,7 @@
           <span class="countdown-colon">:</span>
           <span id="seconds" class="countdown-segment">00</span>
         </div>
-        <p class="text-sm text-white/30 mt-3" id="statusMessage">—</p>
+        <p class="text-sm text-white/30 mt-3 h-5" id="statusMessage"></p>
       </div>
 
       <!-- Progress Bar -->
@@ -78,7 +82,7 @@
       </div>
 
       <!-- Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <!-- Language Toggle -->
         <div class="control-card" id="languageControl">
           <div class="flex items-center justify-between">
@@ -117,17 +121,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Start Button -->
-      <button id="startBtn" class="start-button w-full">
-        <span class="start-button-glow"></span>
-        <span class="relative flex items-center justify-center gap-2">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          <span id="startBtnText">Start Timer & Enable Audio</span>
-        </span>
-      </button>
     </main>
 
     <!-- Footer -->

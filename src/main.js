@@ -91,7 +91,7 @@ function cacheDom() {
     'subtitle', 'dateLabel', 'currentDate', 'sehriLabel', 'sehriTime',
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
-    'startBtn', 'startBtnText', 'currentLangLabel', 'voiceStatusLabel',
+    'audioUnlockOverlay', 'currentLangLabel', 'voiceStatusLabel',
   ];
   ids.forEach((id) => { els[id] = $(id); });
 }
@@ -171,10 +171,11 @@ function updateLabels() {
   els.currentLangLabel.textContent = s.langLabel;
   els.voiceStatusLabel.textContent = state.voiceEnabled ? s.voiceOn : s.voiceOff;
 
-  if (state.timerStarted) {
-    els.startBtnText.textContent = s.stopBtn;
+  // Toggle body font based on language
+  if (state.lang === 'bn') {
+    document.body.classList.add('lang-bn');
   } else {
-    els.startBtnText.textContent = s.startBtn;
+    document.body.classList.remove('lang-bn');
   }
 
   // Update date display
@@ -339,14 +340,31 @@ function init() {
   updateLabels();
   updateCountdown(); // Initial display
 
+  // ─── Automatic Activation ───
+  state.timerStarted = true;
+  state.countdownInterval = setInterval(() => {
+    updateCountdown();
+  }, 1000);
 
+  // ─── Audio Unlock Handler ───
+  // Modern browsers block audio autoplay until the user interacts with the page.
+  // This invisible overlay captures the first click to "unlock" the audio system.
+  els.audioUnlockOverlay.addEventListener('click', () => {
+    els.audioUnlockOverlay.remove();
+    // Providing a hint to the user that audio is now enabled if they want it
+    console.log("Audio system unlocked by user interaction.");
+    // Force a small announcement if voice is already enabled
+    if (state.voiceEnabled) {
+      speak(''); // Prime the audio engine
+    }
+  }, { once: true });
 
   // ─── Event Listeners ───
 
   // Language toggle
   els.langToggle.addEventListener('change', (e) => {
     state.lang = e.target.checked ? 'bn' : 'en';
-    state.lastAnnouncedMinute = -1; // Reset to allow re-announcement in new language
+    state.lastAnnouncedMinute = -1; // Reset to allow re-announcement
     updateLabels();
     updateCountdown();
   });
@@ -362,40 +380,6 @@ function init() {
       activeAudio.pause();
       activeAudio = null;
     }
-  });
-
-  // Start/Stop button
-  els.startBtn.addEventListener('click', async () => {
-    if (state.timerStarted) {
-      // Stop
-      state.timerStarted = false;
-      if (state.countdownInterval) {
-        clearInterval(state.countdownInterval);
-        state.countdownInterval = null;
-      }
-      if (activeAudio) {
-        activeAudio.pause();
-        activeAudio = null;
-      }
-      els.startBtn.classList.remove('active');
-      updateLabels();
-      return;
-    }
-
-    // Start
-    state.timerStarted = true;
-    state.lastAnnouncedMinute = -1;
-    els.startBtn.classList.add('active');
-    updateLabels();
-
-    // (Removed redundant 'SehriCast activated' speech to prevent interrupting the time remaining announcement)
-
-    // Start countdown interval
-    state.countdownInterval = setInterval(() => {
-      updateCountdown();
-    }, 1000);
-
-    updateCountdown();
   });
 }
 
