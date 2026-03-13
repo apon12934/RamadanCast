@@ -11,13 +11,13 @@
   "categories": ["productivity", "lifestyle"],
   "icons": [
     {
-      "src": "/logo/RmadanCast.svg",
+      "src": "/logo/RmadanCast%20-%20circular.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/logo/RmadanCast.svg",
+      "src": "/logo/RmadanCast%20-%20circular.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
