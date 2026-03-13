@@ -32,13 +32,13 @@
             <path d="M20 2a18 18 0 1 0 0 36 14 14 0 0 1 0-36z" fill="url(#crescentGrad)" />
             <defs>
               <linearGradient id="crescentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#c084fc" />
-                <stop offset="100%" stop-color="#818cf8" />
+                <stop offset="0%" class="crescent-stop-1" />
+                <stop offset="100%" class="crescent-stop-2" />
               </linearGradient>
             </defs>
           </svg>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-outfit font-bold tracking-tight bg-gradient-to-r from-purple-300 via-violet-400 to-indigo-400 bg-clip-text text-transparent" id="mainTitle">
+        <h1 class="text-3xl sm:text-4xl font-outfit font-bold tracking-tight text-transparent" id="mainTitle">
           RamadanCast
         </h1>
       </div>
@@ -78,7 +78,7 @@
 
       <!-- Progress Bar -->
       <div class="w-full h-1.5 rounded-full bg-white/5 mb-6 sm:mb-8 overflow-hidden">
-        <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 transition-all duration-1000 ease-linear" style="width: 0%"></div>
+        <div id="progressBar" class="h-full rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
       </div>
 
       <!-- Controls -->

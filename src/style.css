@@ -16,6 +16,8 @@ body.theme-sehri {
   --text-gradient: linear-gradient(180deg, #e2d6ff 0%, #a78bfa 50%, #7c3aed 100%);
   --glow-color: rgba(139, 92, 246, 0.3);
   --progress-gradient: linear-gradient(90deg, #a855f7 0%, #8b5cf6 50%, #6366f1 100%);
+  --crescent-stop-1: #c084fc;
+  --crescent-stop-2: #818cf8;
 }
 
 body.theme-iftar {
@@ -26,6 +28,8 @@ body.theme-iftar {
   --text-gradient: linear-gradient(180deg, #ffedd5 0%, #fb923c 50%, #ea580c 100%);
   --glow-color: rgba(249, 115, 22, 0.3);
   --progress-gradient: linear-gradient(90deg, #f43f5e 0%, #f97316 50%, #eab308 100%);
+  --crescent-stop-1: #fb923c;
+  --crescent-stop-2: #ea580c;
 }
 
 .font-outfit {
@@ -144,6 +148,25 @@ body.lang-bn .countdown-segment {
   text-align: center;
   transition: background 1.5s ease, filter 1.5s ease;
 }
+
+#mainTitle {
+  background: var(--text-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background 1.5s ease;
+}
+
+#progressBar {
+  background: var(--progress-gradient);
+  transition: width 1s linear, background 1.5s ease;
+}
+
+.crescent-path {
+  transition: fill 1.5s ease;
+}
+
+.crescent-stop-1 { stop-color: var(--crescent-stop-1); transition: stop-color 1.5s ease; }
+.crescent-stop-2 { stop-color: var(--crescent-stop-2); transition: stop-color 1.5s ease; }
 
 .countdown-colon {
   font-family: var(--font-outfit);
