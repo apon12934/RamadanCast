@@ -71,9 +71,9 @@ const STRINGS = {
 };
 
 // ─── State ───
-let state = {
-  lang: 'en',
-  voiceEnabled: false,
+const state = {
+  lang: 'bn', // Default to Bangla
+  voiceEnabled: true, // Default to Voice ON
   timerStarted: false,
   lastAnnouncedMinute: -1,
   countdownInterval: null,
