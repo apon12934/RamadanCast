@@ -351,11 +351,12 @@ function init() {
   // This invisible overlay captures the first click to "unlock" the audio system.
   els.audioUnlockOverlay.addEventListener('click', () => {
     els.audioUnlockOverlay.remove();
-    // Providing a hint to the user that audio is now enabled if they want it
     console.log("Audio system unlocked by user interaction.");
-    // Force a small announcement if voice is already enabled
+    
     if (state.voiceEnabled) {
-      speak(''); // Prime the audio engine
+      // Force an immediate announcement now that the browser permits it
+      state.lastAnnouncedMinute = -1;
+      updateCountdown();
     }
   }, { once: true });
 
