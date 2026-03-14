@@ -20,10 +20,9 @@ const STRINGS = {
     loading: 'Fetching prayer times…',
     apiError: 'Unable to sync live times. Please check your connection.',
     waitingTomorrow: 'Today\'s times have ended. Refreshing at midnight…',
-    phaseSwapLabel: 'View Phase',
-    autoPhaseLabel: 'Auto',
-    sehriPhaseLabel: 'Sehri (Manual)',
-    iftarPhaseLabel: 'Iftar (Manual)',
+    phaseSwapLabel: 'Switch To',
+    sehriPhaseLabel: 'Sehri',
+    iftarPhaseLabel: 'Iftar',
   },
   bn: {
     dateLabel: 'আজকের তারিখ',
@@ -40,10 +39,9 @@ const STRINGS = {
     loading: 'নামাজের সময় সংগ্রহ হচ্ছে…',
     apiError: 'সময় সিঙ্ক করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।',
     waitingTomorrow: 'আজকের সময় শেষ হয়েছে। মধ্যরাতে রিফ্রেশ হবে…',
-    phaseSwapLabel: 'সময় দেখুন',
-    autoPhaseLabel: 'অটো',
-    sehriPhaseLabel: 'সেহরি (ম্যানুয়াল)',
-    iftarPhaseLabel: 'ইফতার (ম্যানুয়াল)',
+    phaseSwapLabel: 'পরিবর্তন করুন',
+    sehriPhaseLabel: 'সেহরি',
+    iftarPhaseLabel: 'ইফতার',
   },
 };
 
@@ -56,7 +54,7 @@ const state = {
   countdownInterval: null,
   targetTime: null,
   phase: 'sehri', // 'sehri' or 'iftar'
-  manualPhase: 'auto', // 'auto', 'sehri', 'iftar'
+  isManualOverride: false, // true if user toggled the button
   isLoading: true,
   apiError: null,
   // Live API data
@@ -210,24 +208,23 @@ function scheduleMidnightRefresh() {
 function determineAndSetPhase() {
   const now = new Date();
 
-  if (state.manualPhase !== 'auto') {
-    state.phase = state.manualPhase;
-    state.targetTime = state.phase === 'sehri' ? state.sehriTime : state.iftarTime;
-    updateTheme();
-    return;
-  }
-
-  if (state.sehriTime && state.iftarTime) {
+  // If not manually checking the other phase, follow strict auto logic
+  if (!state.isManualOverride && state.sehriTime && state.iftarTime) {
     if (now < state.sehriTime) {
       state.phase = 'sehri';
-      state.targetTime = state.sehriTime;
     } else if (now >= state.sehriTime && now < state.iftarTime) {
       state.phase = 'iftar';
-      state.targetTime = state.iftarTime;
     } else {
       // Both times have passed today — waiting for tomorrow
       state.phase = 'iftar'; // Keep iftar theme until midnight
-      state.targetTime = null;
+    }
+  }
+
+  if (state.sehriTime && state.iftarTime) {
+    if (state.phase === 'sehri') {
+      state.targetTime = (now < state.sehriTime) ? state.sehriTime : null;
+    } else {
+      state.targetTime = (now < state.iftarTime) ? state.iftarTime : null;
     }
   } else {
     state.targetTime = null;
@@ -289,13 +286,9 @@ function updateLabels() {
   
   if (els.phaseSwapLabel) {
     els.phaseSwapLabel.textContent = s.phaseSwapLabel;
-    if (state.manualPhase === 'auto') {
-      els.phaseCurrentLabel.textContent = s.autoPhaseLabel;
-      els.phaseCurrentLabel.classList.add('text-emerald-400');
-    } else {
-      els.phaseCurrentLabel.textContent = state.phase === 'sehri' ? s.sehriPhaseLabel : s.iftarPhaseLabel;
-      els.phaseCurrentLabel.classList.remove('text-emerald-400');
-    }
+    // The button displays the OPPOSITE phase (the one you switch *to*)
+    els.phaseCurrentLabel.textContent = state.phase === 'sehri' ? s.iftarPhaseLabel : s.sehriPhaseLabel;
+    els.phaseCurrentLabel.classList.remove('text-emerald-400');
   }
 
   // Toggle body font based on language
@@ -348,7 +341,7 @@ function updateCountdown() {
   const diff = state.targetTime - now;
 
   if (diff <= 0) {
-    if (state.manualPhase !== 'auto') {
+    if (state.isManualOverride) {
       els.hours.textContent = '00';
       els.minutes.textContent = '00';
       els.seconds.textContent = '00';
@@ -530,14 +523,14 @@ function init() {
   // Phase Swap button
   if (els.phaseSwapBtn) {
     els.phaseSwapBtn.addEventListener('click', () => {
-      // Cycle through Auto -> Iftar -> Sehri -> Auto
-      if (state.manualPhase === 'auto') {
-        state.manualPhase = state.phase === 'sehri' ? 'iftar' : 'sehri';
-      } else if (state.manualPhase === 'iftar') {
-        state.manualPhase = 'sehri';
-      } else {
-        state.manualPhase = 'auto';
+      // Toggle manual override
+      state.isManualOverride = !state.isManualOverride;
+      
+      if (state.isManualOverride) {
+        // Switch to the opposite phase manually
+        state.phase = state.phase === 'sehri' ? 'iftar' : 'sehri';
       }
+
       
       determineAndSetPhase();
       state.lastAnnouncedMinute = -1;
