@@ -73,20 +73,20 @@
     <main class="glass-card w-full max-w-lg sm:max-w-xl p-5 sm:p-10 mb-4 sm:mb-8">
       
       <!-- Date & Sehri Info -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-5 sm:mb-8 pb-4 sm:pb-6 border-b border-white/10">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-white/10">
         <div class="text-center sm:text-left">
-          <p class="text-xs uppercase tracking-widest text-white/40 mb-1" id="dateLabel">Today's Date</p>
+          <p class="text-[10px] sm:text-xs uppercase tracking-widest text-white/40 mb-1" id="dateLabel">Today's Date</p>
           <p class="text-base sm:text-lg font-semibold text-white/90" id="currentDate">—</p>
         </div>
         <div class="text-center sm:text-right">
-          <p class="text-xs uppercase tracking-widest text-white/40 mb-1" id="sehriLabel">Sehri Ends At</p>
+          <p class="text-[10px] sm:text-xs uppercase tracking-widest text-white/40 mb-1" id="sehriLabel">Sehri Ends At</p>
           <p class="text-base sm:text-lg font-semibold text-emerald-400" id="sehriTime">—</p>
         </div>
       </div>
 
       <!-- Countdown Timer -->
-      <div class="text-center mb-5 sm:mb-8">
-        <p class="text-xs uppercase tracking-widest text-white/40 mb-2 sm:mb-4" id="countdownLabel">Time Remaining</p>
+      <div class="text-center mb-4 sm:mb-8">
+        <p class="text-[10px] sm:text-xs uppercase tracking-widest text-white/40 mb-2 sm:mb-4" id="countdownLabel">Time Remaining</p>
         <div id="countdownDisplay" class="countdown-digits select-none">
           <span id="hours" class="countdown-segment">00</span>
           <span class="countdown-colon">:</span>
@@ -94,11 +94,11 @@
           <span class="countdown-colon">:</span>
           <span id="seconds" class="countdown-segment">00</span>
         </div>
-        <p class="text-sm text-white/30 mt-3 h-5" id="statusMessage"></p>
+        <p class="text-xs sm:text-sm text-white/30 mt-2 sm:mt-3 empty:hidden" id="statusMessage"></p>
       </div>
 
       <!-- Progress Bar -->
-      <div class="w-full h-1.5 rounded-full bg-white/5 mb-5 sm:mb-8 overflow-hidden">
+      <div class="w-full h-1.5 rounded-full bg-white/5 mb-6 sm:mb-8 overflow-hidden">
         <div id="progressBar" class="h-full rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
       </div>
 
