@@ -445,12 +445,15 @@ async function speak(text) {
 }
 
 function updateTheme() {
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (state.phase === 'iftar') {
     document.body.classList.remove('theme-sehri');
     document.body.classList.add('theme-iftar');
+    if (metaThemeColor) metaThemeColor.setAttribute('content', '#2a0a1a');
   } else {
     document.body.classList.remove('theme-iftar');
     document.body.classList.add('theme-sehri');
+    if (metaThemeColor) metaThemeColor.setAttribute('content', '#0c0a1a');
   }
 }
 

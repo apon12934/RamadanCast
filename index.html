@@ -7,7 +7,7 @@
   <meta name="description" content="RmadanCast is a premium Sehri and Iftar countdown timer and voice announcer for Ramadan 2026. Get accurate times for Dhaka with voice alerts in English and Bangla." />
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#f97316" />
+  <meta name="theme-color" content="#0c0a1a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="RmadanCast" />
@@ -41,10 +41,10 @@
   <div class="orb orb-3" aria-hidden="true"></div>
 
   <!-- Main Container -->
-  <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+  <div class="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] px-4 py-6 sm:px-6 lg:px-8">
 
     <!-- Header -->
-    <header class="text-center mb-6 sm:mb-10 w-full max-w-lg">
+    <header class="text-center mb-4 sm:mb-10 w-full max-w-lg">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
         <img src="/logo/RmadanCast.svg" alt="RmadanCast" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_20px_rgba(249,115,22,0.4)]" />
@@ -70,10 +70,10 @@
     </header>
 
       <!-- Main Card -->
-    <main class="glass-card w-full max-w-lg sm:max-w-xl p-6 sm:p-10 mb-6 sm:mb-8">
+    <main class="glass-card w-full max-w-lg sm:max-w-xl p-5 sm:p-10 mb-4 sm:mb-8">
       
       <!-- Date & Sehri Info -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-white/10">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-5 sm:mb-8 pb-4 sm:pb-6 border-b border-white/10">
         <div class="text-center sm:text-left">
           <p class="text-xs uppercase tracking-widest text-white/40 mb-1" id="dateLabel">Today's Date</p>
           <p class="text-base sm:text-lg font-semibold text-white/90" id="currentDate">—</p>
@@ -85,8 +85,8 @@
       </div>
 
       <!-- Countdown Timer -->
-      <div class="text-center mb-6 sm:mb-8">
-        <p class="text-xs uppercase tracking-widest text-white/40 mb-3 sm:mb-4" id="countdownLabel">Time Remaining</p>
+      <div class="text-center mb-5 sm:mb-8">
+        <p class="text-xs uppercase tracking-widest text-white/40 mb-2 sm:mb-4" id="countdownLabel">Time Remaining</p>
         <div id="countdownDisplay" class="countdown-digits select-none">
           <span id="hours" class="countdown-segment">00</span>
           <span class="countdown-colon">:</span>
@@ -98,7 +98,7 @@
       </div>
 
       <!-- Progress Bar -->
-      <div class="w-full h-1.5 rounded-full bg-white/5 mb-6 sm:mb-8 overflow-hidden">
+      <div class="w-full h-1.5 rounded-full bg-white/5 mb-5 sm:mb-8 overflow-hidden">
         <div id="progressBar" class="h-full rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
       </div>
 
@@ -156,7 +156,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-8 text-center">
+    <footer class="mt-4 sm:mt-8 text-center">
       <div class="flex flex-col items-center gap-4">
         <p class="text-white/40 text-sm tracking-wide bg-white/5 px-4 py-1.5 rounded-full border border-white/5" id="footerText">
           &copy; 2026 Alamin Islam Apon • RamadanCast
