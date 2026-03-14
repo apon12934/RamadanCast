@@ -20,6 +20,10 @@ const STRINGS = {
     loading: 'Fetching prayer times…',
     apiError: 'Unable to sync live times. Please check your connection.',
     waitingTomorrow: 'Today\'s times have ended. Refreshing at midnight…',
+    phaseSwapLabel: 'View Phase',
+    autoPhaseLabel: 'Auto',
+    sehriPhaseLabel: 'Sehri (Manual)',
+    iftarPhaseLabel: 'Iftar (Manual)',
   },
   bn: {
     dateLabel: 'আজকের তারিখ',
@@ -36,6 +40,10 @@ const STRINGS = {
     loading: 'নামাজের সময় সংগ্রহ হচ্ছে…',
     apiError: 'সময় সিঙ্ক করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।',
     waitingTomorrow: 'আজকের সময় শেষ হয়েছে। মধ্যরাতে রিফ্রেশ হবে…',
+    phaseSwapLabel: 'সময় দেখুন',
+    autoPhaseLabel: 'অটো',
+    sehriPhaseLabel: 'সেহরি (ম্যানুয়াল)',
+    iftarPhaseLabel: 'ইফতার (ম্যানুয়াল)',
   },
 };
 
@@ -48,6 +56,7 @@ const state = {
   countdownInterval: null,
   targetTime: null,
   phase: 'sehri', // 'sehri' or 'iftar'
+  manualPhase: 'auto', // 'auto', 'sehri', 'iftar'
   isLoading: true,
   apiError: null,
   // Live API data
@@ -70,7 +79,7 @@ function cacheDom() {
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
     'currentLangLabel', 'voiceStatusLabel', 'welcomeOverlay', 'startExperienceBtn',
-    'installBtn'
+    'installBtn', 'phaseSwapBtn', 'phaseSwapLabel', 'phaseCurrentLabel'
   ];
   ids.forEach((id) => { els[id] = $(id); });
 }
@@ -201,6 +210,13 @@ function scheduleMidnightRefresh() {
 function determineAndSetPhase() {
   const now = new Date();
 
+  if (state.manualPhase !== 'auto') {
+    state.phase = state.manualPhase;
+    state.targetTime = state.phase === 'sehri' ? state.sehriTime : state.iftarTime;
+    updateTheme();
+    return;
+  }
+
   if (state.sehriTime && state.iftarTime) {
     if (now < state.sehriTime) {
       state.phase = 'sehri';
@@ -270,6 +286,17 @@ function updateLabels() {
   els.countdownLabel.textContent = state.phase === 'sehri' ? s.countdownLabelSehri : s.countdownLabelIftar;
   els.currentLangLabel.textContent = s.langLabel;
   els.voiceStatusLabel.textContent = state.voiceEnabled ? s.voiceOn : s.voiceOff;
+  
+  if (els.phaseSwapLabel) {
+    els.phaseSwapLabel.textContent = s.phaseSwapLabel;
+    if (state.manualPhase === 'auto') {
+      els.phaseCurrentLabel.textContent = s.autoPhaseLabel;
+      els.phaseCurrentLabel.classList.add('text-emerald-400');
+    } else {
+      els.phaseCurrentLabel.textContent = state.phase === 'sehri' ? s.sehriPhaseLabel : s.iftarPhaseLabel;
+      els.phaseCurrentLabel.classList.remove('text-emerald-400');
+    }
+  }
 
   // Toggle body font based on language
   if (state.lang === 'bn') {
@@ -321,6 +348,19 @@ function updateCountdown() {
   const diff = state.targetTime - now;
 
   if (diff <= 0) {
+    if (state.manualPhase !== 'auto') {
+      els.hours.textContent = '00';
+      els.minutes.textContent = '00';
+      els.seconds.textContent = '00';
+      els.countdownDisplay.classList.remove('loading-pulse');
+      els.countdownDisplay.classList.add('countdown-ended');
+      els.countdownDisplay.classList.remove('countdown-urgent');
+      els.statusMessage.textContent = STRINGS[state.lang].waitingTomorrow;
+      els.statusMessage.classList.remove('api-error');
+      els.progressBar.style.width = '100%';
+      return;
+    }
+
     // Phase ended — transition to next phase
     if (state.phase === 'sehri' && state.iftarTime && now < state.iftarTime) {
       // Sehri ended, switch to Iftar countdown
@@ -486,6 +526,25 @@ function init() {
       updateCountdown();
     }
   });
+
+  // Phase Swap button
+  if (els.phaseSwapBtn) {
+    els.phaseSwapBtn.addEventListener('click', () => {
+      // Cycle through Auto -> Iftar -> Sehri -> Auto
+      if (state.manualPhase === 'auto') {
+        state.manualPhase = state.phase === 'sehri' ? 'iftar' : 'sehri';
+      } else if (state.manualPhase === 'iftar') {
+        state.manualPhase = 'sehri';
+      } else {
+        state.manualPhase = 'auto';
+      }
+      
+      determineAndSetPhase();
+      state.lastAnnouncedMinute = -1;
+      updateLabels();
+      updateCountdown();
+    });
+  }
 }
 
 // ─── PWA: Service Worker Registration ───
