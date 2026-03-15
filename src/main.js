@@ -411,14 +411,14 @@ function updateCountdown() {
     const announceStr = state.phase === 'sehri'
       ? STRINGS[state.lang].announceSehri(totalMin)
       : STRINGS[state.lang].announceIftar(totalMin);
-    speak(announceStr);
+    playHighQualityVoice(announceStr, state.lang);
   }
 }
 
-// ─── Voice System (Unofficial Google TTS) ───
+// ─── Voice System (Netlify + Google Cloud TTS) ───
 let activeAudio = null;
 
-async function speak(text) {
+async function playHighQualityVoice(text, language) {
   if (!state.voiceEnabled) return;
 
   if (activeAudio) {
@@ -426,11 +426,28 @@ async function speak(text) {
     activeAudio = null;
   }
 
-  const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
-
   try {
-    const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
-    activeAudio = new Audio(url);
+    const response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        language,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TTS function returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data?.audioContent) {
+      throw new Error('No audio content returned by TTS function');
+    }
+
+    activeAudio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
 
     activeAudio.onended = () => {
       activeAudio = null;
