@@ -244,9 +244,21 @@ function determineAndSetPhase() {
 
   if (state.sehriTime && state.iftarTime) {
     if (state.phase === 'sehri') {
-      state.targetTime = (now < state.sehriTime) ? state.sehriTime : null;
+      if (now < state.sehriTime) {
+        state.targetTime = state.sehriTime;
+      } else if (state.isManualOverride) {
+        state.targetTime = new Date(state.sehriTime.getTime() + 24 * 60 * 60 * 1000);
+      } else {
+        state.targetTime = null;
+      }
     } else {
-      state.targetTime = (now < state.iftarTime) ? state.iftarTime : null;
+      if (now < state.iftarTime) {
+        state.targetTime = state.iftarTime;
+      } else if (state.isManualOverride) {
+        state.targetTime = new Date(state.iftarTime.getTime() + 24 * 60 * 60 * 1000);
+      } else {
+        state.targetTime = null;
+      }
     }
   } else {
     state.targetTime = null;
