@@ -313,7 +313,7 @@ function updateLabels() {
   const s = STRINGS[state.lang];
   els.subtitle.textContent = buildSubtitle();
   els.dateLabel.textContent = s.dateLabel;
-  els.sehriLabel.textContent = state.phase === 'sehri' ? s.sehriLabel : s.iftarLabel;
+  els.sehriLabel.textContent = state.phase === 'sehri' ? s.iftarLabel : s.sehriLabel;
   els.countdownLabel.textContent = state.phase === 'sehri' ? s.countdownLabelSehri : s.countdownLabelIftar;
   els.currentLangLabel.textContent = s.langLabel;
   els.voiceStatusLabel.textContent = state.voiceEnabled ? s.voiceOn : s.voiceOff;
@@ -340,7 +340,7 @@ function updateLabels() {
   }
 
   // Update the time display for the active phase
-  const timeStr = state.phase === 'sehri' ? state.sehriTimeStr : state.iftarTimeStr;
+  const timeStr = state.phase === 'sehri' ? state.iftarTimeStr : state.sehriTimeStr;
   if (timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     const period = h >= 12 ? 'PM' : 'AM';
