@@ -435,7 +435,7 @@ function updateCountdown() {
   }
 
   // Progress bar
-  const windowStart = new Date(state.targetTime.getTime() - 12 * 60 * 60 * 1000);
+  const windowStart = new Date(state.targetTime.getTime() - 24 * 60 * 60 * 1000);
   const totalDuration = state.targetTime - windowStart;
   const elapsed = now - windowStart;
   const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
