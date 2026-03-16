@@ -419,65 +419,103 @@ function updateCountdown() {
 const GOOGLE_TTS_API_KEY = "";
 let activeAudio = null;
 
+function speakWithSynthesis(text, lang) {
+  return new Promise((resolve, reject) => {
+    if (!window.speechSynthesis) return reject(new Error('speechSynthesis not supported'));
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'bn' ? 'bn-BD' : 'en-US';
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    // Try to pick a good voice for the language
+    const voices = window.speechSynthesis.getVoices();
+    const langPrefix = lang === 'bn' ? 'bn' : 'en';
+    const match = voices.find(v => v.lang.startsWith(langPrefix) && !v.localService)
+      || voices.find(v => v.lang.startsWith(langPrefix));
+    if (match) utterance.voice = match;
+
+    utterance.onend = () => resolve();
+    utterance.onerror = (e) => reject(new Error(`SpeechSynthesis error: ${e.error}`));
+
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
 async function speak(text) {
   if (!state.voiceEnabled) return;
 
+  // Stop any active audio or speech
   if (activeAudio) {
     activeAudio.pause();
     activeAudio = null;
   }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
 
-  try {
-    if (!GOOGLE_TTS_API_KEY) throw new Error('No API key');
-
-    // Step A: Premium Google Cloud TTS
-    const voiceName = state.lang === 'bn' ? 'bn-BD-Wavenet-A' : 'en-US-Journey-D';
-    const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
-
-    const res = await fetch(
-      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          input: { text },
-          voice: { languageCode: langCode, name: voiceName },
-          audioConfig: { audioEncoding: 'MP3' },
-        }),
-      }
-    );
-
-    if (!res.ok) throw new Error(`Cloud TTS HTTP ${res.status}`);
-
-    const data = await res.json();
-    if (!data.audioContent) throw new Error('No audioContent in response');
-
-    const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
-    activeAudio = new Audio(audioSrc);
-    activeAudio.onended = () => { activeAudio = null; };
-
-    await activeAudio.play().catch(e => {
-      if (e.name !== 'AbortError') throw e;
-    });
-
-    console.log('[TTS] Premium Cloud voice played.');
-  } catch (premiumError) {
-    // Step B: Bulletproof fallback — Google Translate TTS
-    console.warn('[TTS] Premium failed, using fallback:', premiumError.message);
+  // Tier 1: Premium Google Cloud TTS (only if API key is set)
+  if (GOOGLE_TTS_API_KEY) {
     try {
+      const voiceName = state.lang === 'bn' ? 'bn-BD-Wavenet-A' : 'en-US-Journey-D';
       const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
-      const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
-      activeAudio = new Audio(url);
+
+      const res = await fetch(
+        `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            input: { text },
+            voice: { languageCode: langCode, name: voiceName },
+            audioConfig: { audioEncoding: 'MP3' },
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`Cloud TTS HTTP ${res.status}`);
+
+      const data = await res.json();
+      if (!data.audioContent) throw new Error('No audioContent in response');
+
+      const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+      activeAudio = new Audio(audioSrc);
       activeAudio.onended = () => { activeAudio = null; };
 
       await activeAudio.play().catch(e => {
         if (e.name !== 'AbortError') throw e;
       });
 
-      console.log('[TTS] Fallback voice played.');
-    } catch (fallbackError) {
-      console.error('[TTS] Fallback also failed:', fallbackError);
+      console.log('[TTS] Tier 1: Premium Cloud voice played.');
+      return;
+    } catch (err) {
+      console.warn('[TTS] Tier 1 failed:', err.message);
     }
+  }
+
+  // Tier 2: Web Speech API (free, built into the browser)
+  try {
+    await speakWithSynthesis(text, state.lang);
+    console.log('[TTS] Tier 2: Web Speech API voice played.');
+    return;
+  } catch (err) {
+    console.warn('[TTS] Tier 2 failed:', err.message);
+  }
+
+  // Tier 3: Google Translate TTS (last resort)
+  try {
+    const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
+    const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
+    activeAudio = new Audio(url);
+    activeAudio.onended = () => { activeAudio = null; };
+
+    await activeAudio.play().catch(e => {
+      if (e.name !== 'AbortError') throw e;
+    });
+
+    console.log('[TTS] Tier 3: Google Translate fallback played.');
+  } catch (err) {
+    console.error('[TTS] All tiers failed:', err);
   }
 }
 
