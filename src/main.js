@@ -7,8 +7,8 @@ const API_PARAMS = 'city=Dhaka&country=Bangladesh&method=1&tune=0,-1,0,0,0,2,2,0
 const STRINGS = {
   en: {
     dateLabel: "Today's Date",
-    sehriLabel: 'Sehri Ends At',
-    iftarLabel: 'Iftar Starts At',
+    sehriLabel: 'Next Sehri Ends At',
+    iftarLabel: 'Next Iftar Starts At',
     countdownLabelSehri: 'Time until Sehri',
     countdownLabelIftar: 'Time until Iftar',
     langLabel: 'English',
@@ -32,8 +32,8 @@ const STRINGS = {
   },
   bn: {
     dateLabel: 'আজকের তারিখ',
-    sehriLabel: 'সেহরি শেষ',
-    iftarLabel: 'ইফতার শুরু',
+    sehriLabel: 'পরবর্তী সেহরি শেষ',
+    iftarLabel: 'পরবর্তী ইফতার শুরু',
     countdownLabelSehri: 'সেহরির বাকি সময়',
     countdownLabelIftar: 'ইফতারের বাকি সময়',
     langLabel: 'বাংলা',
@@ -317,7 +317,7 @@ function updateLabels() {
   const s = STRINGS[state.lang];
   els.subtitle.textContent = buildSubtitle();
   els.dateLabel.textContent = s.dateLabel;
-  els.sehriLabel.textContent = state.phase === 'sehri' ? s.iftarLabel : s.sehriLabel;
+  els.sehriLabel.textContent = state.phase === 'sehri' ? s.sehriLabel : s.iftarLabel;
   els.countdownLabel.textContent = state.phase === 'sehri' ? s.countdownLabelSehri : s.countdownLabelIftar;
   els.currentLangLabel.textContent = s.langLabel;
   els.voiceStatusLabel.textContent = state.voiceEnabled ? s.voiceOn : s.voiceOff;
@@ -342,7 +342,7 @@ function updateLabels() {
     : formatDateDisplay(new Date());
 
   // Update the time display for the active phase
-  const timeStr = state.phase === 'sehri' ? state.iftarTimeStr : state.sehriTimeStr;
+  const timeStr = state.phase === 'sehri' ? state.sehriTimeStr : state.iftarTimeStr;
   if (timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     const period = h >= 12 ? 'PM' : 'AM';
