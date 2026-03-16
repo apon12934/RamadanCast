@@ -15,8 +15,14 @@ const STRINGS = {
     voiceOn: 'On',
     voiceOff: 'Off',
     noData: 'Waiting for next prayer time…',
-    announceSehri: (min) => `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Sehri.`,
-    announceIftar: (min) => `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Iftar.`,
+    announceSehri: (min) => {
+      if (min >= 60) { const h = Math.floor(min / 60), m = min % 60; return `${h} hour${h !== 1 ? 's' : ''}${m ? ` ${m} minute${m !== 1 ? 's' : ''}` : ''} remaining for Sehri.`; }
+      return `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Sehri.`;
+    },
+    announceIftar: (min) => {
+      if (min >= 60) { const h = Math.floor(min / 60), m = min % 60; return `${h} hour${h !== 1 ? 's' : ''}${m ? ` ${m} minute${m !== 1 ? 's' : ''}` : ''} remaining for Iftar.`; }
+      return `Only ${min} minute${min !== 1 ? 's' : ''} remaining for Iftar.`;
+    },
     loading: 'Fetching prayer times…',
     apiError: 'Unable to sync live times. Please check your connection.',
     waitingTomorrow: 'Today\'s times have ended. Refreshing at midnight…',
@@ -34,8 +40,14 @@ const STRINGS = {
     voiceOn: 'চালু',
     voiceOff: 'বন্ধ',
     noData: 'পরবর্তী নামাজের সময় অপেক্ষা করছে…',
-    announceSehri: (min) => `সেহরির আর মাত্র ${min} মিনিট বাকি আছে।`,
-    announceIftar: (min) => `ইফতারের আর মাত্র ${min} মিনিট বাকি আছে।`,
+    announceSehri: (min) => {
+      if (min >= 60) { const h = Math.floor(min / 60), m = min % 60; return `সেহরির আর ${h} ঘণ্টা${m ? ` ${m} মিনিট` : ''} বাকি আছে।`; }
+      return `সেহরির আর মাত্র ${min} মিনিট বাকি আছে।`;
+    },
+    announceIftar: (min) => {
+      if (min >= 60) { const h = Math.floor(min / 60), m = min % 60; return `ইফতারের আর ${h} ঘণ্টা${m ? ` ${m} মিনিট` : ''} বাকি আছে।`; }
+      return `ইফতারের আর মাত্র ${min} মিনিট বাকি আছে।`;
+    },
     loading: 'নামাজের সময় সংগ্রহ হচ্ছে…',
     apiError: 'সময় সিঙ্ক করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।',
     waitingTomorrow: 'আজকের সময় শেষ হয়েছে। মধ্যরাতে রিফ্রেশ হবে…',
@@ -102,20 +114,23 @@ function formatDateDisplayBn(date) {
 /**
  * Parse a "HH:MM" time string into a Date object for today.
  */
-function parseTimeToday(timeStr) {
+function parseTimeForDate(timeStr, date) {
   const [h, m] = timeStr.split(':').map(Number);
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m, 0, 0);
+}
+
+function formatDateForAPI(date) {
+  return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
 }
 
 // ─── Aladhan API Fetch ───
-async function fetchTodayTimings() {
+async function fetchTodayTimings(date = new Date()) {
   state.isLoading = true;
   state.apiError = null;
   updateLoadingUI();
 
   try {
-    const response = await fetch(`${API_BASE}?${API_PARAMS}`);
+    const response = await fetch(`${API_BASE}/${formatDateForAPI(date)}?${API_PARAMS}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const json = await response.json();
 
@@ -123,21 +138,21 @@ async function fetchTodayTimings() {
       throw new Error('Invalid API response');
     }
 
-    const { timings, date } = json.data;
+    const { timings, date: apiDate } = json.data;
 
     // Parse times (using IFB Tuned Times)
     state.sehriTimeStr = timings.Fajr;  // IFB Sehri is Fajr time tuned by -1 min
     state.iftarTimeStr = timings.Maghrib; // IFB Iftar is Maghrib time tuned by +2 min
-    state.sehriTime = parseTimeToday(state.sehriTimeStr);
-    state.iftarTime = parseTimeToday(state.iftarTimeStr);
+    state.sehriTime = parseTimeForDate(state.sehriTimeStr, date);
+    state.iftarTime = parseTimeForDate(state.iftarTimeStr, date);
 
     // Parse Hijri date - Bangladesh moon sighting is typically 1 day behind API default
-    if (date?.hijri) {
-      let d = parseInt(date.hijri.day) - 1;
-      let m = date.hijri.month.en;
-      let mNum = parseInt(date.hijri.month.number);
-      let y = parseInt(date.hijri.year);
-      
+    if (apiDate?.hijri) {
+      let d = parseInt(apiDate.hijri.day) - 1;
+      let m = apiDate.hijri.month.en;
+      let mNum = parseInt(apiDate.hijri.month.number);
+      let y = parseInt(apiDate.hijri.year);
+
       // Handle underflow if it is the 1st of the month
       if (d <= 0) {
         d = 29; // Rough fallback, assume previous month has 29 days
@@ -150,15 +165,15 @@ async function fetchTodayTimings() {
       state.hijriDate = {
         day: d,
         month: m,
-        monthAr: date.hijri.month.ar,
+        monthAr: apiDate.hijri.month.ar,
         monthNumber: mNum,
         year: y,
       };
     }
 
     // Parse Gregorian date
-    if (date?.gregorian) {
-      const g = date.gregorian;
+    if (apiDate?.gregorian) {
+      const g = apiDate.gregorian;
       state.gregorianDate = new Date(
         Number(g.year), Number(g.month.number) - 1, Number(g.day)
       );
@@ -175,6 +190,13 @@ async function fetchTodayTimings() {
     determineAndSetPhase();
     updateLabels();
     updateCountdown();
+
+    // Both times already passed — chain straight to next day without waiting for midnight
+    if (!state.targetTime && !state.isManualOverride) {
+      const nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+      fetchTodayTimings(nextDay);
+      return;
+    }
 
   } catch (error) {
     console.error('[API] Fetch failed:', error);
@@ -365,11 +387,11 @@ function updateCountdown() {
       return; // next tick picks it up
     }
 
-    // Iftar also ended (or sehri was already the last phase)
-    state.targetTime = null;
-    determineAndSetPhase();
-    updateLabels();
-    updateCountdown(); // Re-run with null target to show waiting state
+    // Iftar ended — chain to next day immediately
+    if (!state.isLoading) {
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      fetchTodayTimings(tomorrow);
+    }
     return;
   }
 
