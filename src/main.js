@@ -83,6 +83,11 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const els = {};
 
+// ─── Performance: display cache (avoid redundant DOM writes) ───
+let _prevH = '', _prevM = '', _prevS = '';
+let _prevUrgent = null;
+let _lastProgressMs = 0;
+
 function cacheDom() {
   const ids = [
     'subtitle', 'dateLabel', 'currentDate', 'sehriLabel', 'sehriTime',
@@ -181,8 +186,6 @@ async function fetchTodayTimings(date = new Date()) {
     state.isLoading = false;
     state.apiError = null;
 
-    console.log(`[API] Fetched: Sehri=${state.sehriTimeStr}, Iftar=${state.iftarTimeStr}`);
-
     // Determine the active phase and start/continue countdown
     determineAndSetPhase();
     updateLabels();
@@ -196,7 +199,6 @@ async function fetchTodayTimings(date = new Date()) {
     }
 
   } catch (error) {
-    console.error('[API] Fetch failed:', error);
     state.isLoading = false;
     state.apiError = error.message;
     updateErrorUI();
@@ -214,10 +216,7 @@ function scheduleMidnightRefresh() {
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5); // 5 seconds past midnight for safety
   const msUntilMidnight = midnight - now;
 
-  console.log(`[Refresh] Scheduled in ${Math.round(msUntilMidnight / 60000)} minutes (at midnight).`);
-
   state.midnightTimeout = setTimeout(() => {
-    console.log('[Refresh] Midnight reached — re-fetching prayer times.');
     state.lastAnnouncedMinute = -1;
     fetchTodayTimings();
   }, msUntilMidnight);
@@ -409,46 +408,51 @@ function updateCountdown() {
     return;
   }
 
-  els.countdownDisplay.classList.remove('loading-pulse');
-
   const totalSeconds = Math.floor(diff / 1000);
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-
-  els.hours.textContent = pad(h);
-  els.minutes.textContent = pad(m);
-  els.seconds.textContent = pad(s);
-
-  // Status message (keep it blank for minimal elegant look)
-  els.statusMessage.textContent = '';
-  els.statusMessage.classList.remove('api-error');
-
-  // Urgent mode (< 5 minutes)
   const totalMin = Math.floor(diff / 60000);
-  if (totalMin < 5) {
-    els.countdownDisplay.classList.add('countdown-urgent');
-    els.countdownDisplay.classList.remove('countdown-ended');
-  } else {
-    els.countdownDisplay.classList.remove('countdown-urgent');
-    els.countdownDisplay.classList.remove('countdown-ended');
-  }
 
-  // Progress bar
-  const windowStart = new Date(state.targetTime.getTime() - 24 * 60 * 60 * 1000);
-  const totalDuration = state.targetTime - windowStart;
-  const elapsed = now - windowStart;
-  const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
-  els.progressBar.style.width = `${progress}%`;
-
-  // Voice announcement (every 1 minute)
+  // Voice announcement — runs even when screen is off / tab hidden
   if (state.voiceEnabled && state.timerStarted && totalMin !== state.lastAnnouncedMinute && totalMin >= 0) {
     state.lastAnnouncedMinute = totalMin;
     const announceMin = totalMin + (diff % 60000 > 0 ? 1 : 0); // round up: 46:59 → "47 mins"
-    const announceStr = state.phase === 'sehri'
+    speak(state.phase === 'sehri'
       ? STRINGS[state.lang].announceSehri(announceMin)
-      : STRINGS[state.lang].announceIftar(announceMin);
-    speak(announceStr);
+      : STRINGS[state.lang].announceIftar(announceMin));
+  }
+
+  // Skip visual DOM updates when screen/tab is hidden — saves CPU on low-end devices
+  if (document.hidden) return;
+
+  els.countdownDisplay.classList.remove('loading-pulse');
+
+  const hStr = pad(h), mStr = pad(m), sStr = pad(s);
+  if (hStr !== _prevH) els.hours.textContent   = _prevH = hStr;
+  if (mStr !== _prevM) els.minutes.textContent = _prevM = mStr;
+  if (sStr !== _prevS) els.seconds.textContent = _prevS = sStr;
+
+  if (els.statusMessage.textContent) {
+    els.statusMessage.textContent = '';
+    els.statusMessage.classList.remove('api-error');
+  }
+
+  // Urgent mode (< 5 minutes)
+  const urgent = totalMin < 5;
+  if (urgent !== _prevUrgent) {
+    els.countdownDisplay.classList.toggle('countdown-urgent', urgent);
+    els.countdownDisplay.classList.remove('countdown-ended');
+    _prevUrgent = urgent;
+  }
+
+  // Progress bar — throttled to once per 5 s (CSS transition handles visual smoothness)
+  const nowMs = now.getTime();
+  if (nowMs - _lastProgressMs >= 5000) {
+    const tMs = state.targetTime.getTime();
+    const progress = Math.min(100, Math.max(0, ((nowMs - (tMs - 86400000)) / 86400000) * 100));
+    els.progressBar.style.width = `${progress.toFixed(2)}%`;
+    _lastProgressMs = nowMs;
   }
 }
 
@@ -494,15 +498,14 @@ async function speak(text) {
 
   } catch (err) {
     if (gen !== speakGen) return;
-    console.warn('[TTS] Cloud failed, using fallback:', err.message);
     try {
       const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
       const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
       activeAudio = new Audio(url);
       activeAudio.onended = () => { activeAudio = null; };
       await activeAudio.play().catch(e => { if (e.name !== 'AbortError') throw e; });
-    } catch (fallbackErr) {
-      console.error('[TTS] Fallback also failed:', fallbackErr);
+    } catch (_) {
+      // fallback also failed — silent
     }
   }
 }
@@ -575,41 +578,45 @@ function init() {
     els.phaseSwapBtn.addEventListener('click', () => {
       // Toggle manual override
       state.isManualOverride = !state.isManualOverride;
-      
+
       if (state.isManualOverride) {
         // Switch to the opposite phase manually
         state.phase = state.phase === 'sehri' ? 'iftar' : 'sehri';
       }
 
-      
+
       determineAndSetPhase();
       state.lastAnnouncedMinute = -1;
       updateLabels();
       updateCountdown();
     });
   }
+
+  // ─── Screen-wake / visibility recovery ───
+  // When screen turns back on or tab becomes active again, immediately refresh
+  // the display and re-announce the current minute (fixes delayed announcements).
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      _prevH = _prevM = _prevS = '';   // force full display refresh
+      _prevUrgent = null;
+      _lastProgressMs = 0;
+      state.lastAnnouncedMinute = -1;  // trigger re-announcement
+      updateCountdown();
+    }
+  });
 }
 
 // ─── PWA: Service Worker Registration ───
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((reg) => {
-        console.log('[PWA] Service Worker registered successfully:', reg);
-      })
-      .catch((err) => {
-        console.warn('[PWA] Service Worker registration failed:', err);
-      });
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
-} else {
-  console.warn('[PWA] Service Worker not supported in this browser');
 }
 
 // ─── PWA: Install Prompt (Browser Popup & Custom Button) ───
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('[PWA] beforeinstallprompt event fired - install prompt available');
   e.preventDefault();
   deferredPrompt = e;
   if (els.installBtn) {
@@ -620,26 +627,19 @@ window.addEventListener('beforeinstallprompt', (e) => {
       els.installBtn.classList.add('hidden');
       els.installBtn.classList.remove('flex');
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`[PWA] User response to the install prompt: ${outcome}`);
+      await deferredPrompt.userChoice;
       deferredPrompt = null;
     });
   }
 });
 
 window.addEventListener('appinstalled', () => {
-  console.log('[PWA] App installed successfully');
   if (els.installBtn) {
     els.installBtn.classList.add('hidden');
     els.installBtn.classList.remove('flex');
   }
   deferredPrompt = null;
 });
-
-// ─── Debugging: Check PWA Readiness ───
-if (navigator.onLine !== undefined) {
-  console.log('[PWA] Online status:', navigator.onLine ? 'Online' : 'Offline');
-}
 
 // ─── Boot ───
 document.addEventListener('DOMContentLoaded', init);
