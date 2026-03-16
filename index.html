@@ -93,30 +93,30 @@
       <!-- Controls -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <!-- Language Toggle -->
-        <div class="control-card" id="languageControl">
+        <label class="control-card cursor-pointer" id="languageControl" for="langToggle">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs uppercase tracking-widest text-white/40 mb-1">Language</p>
               <p class="text-sm font-medium text-white/80" id="currentLangLabel">বাংলা</p>
             </div>
-            <label class="toggle-switch" for="langToggle">
+            <span class="toggle-switch">
               <input type="checkbox" id="langToggle" checked />
               <span class="toggle-slider">
                 <span class="toggle-label-left">EN</span>
                 <span class="toggle-label-right">বাং</span>
               </span>
-            </label>
+            </span>
           </div>
-        </div>
+        </label>
 
         <!-- Voice Toggle -->
-        <div class="control-card" id="voiceControl">
+        <label class="control-card cursor-pointer" id="voiceControl" for="voiceToggle">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs uppercase tracking-widest text-white/40 mb-1">Voice</p>
               <p class="text-sm font-medium text-white/80" id="voiceStatusLabel">বন্ধ</p>
             </div>
-            <label class="toggle-switch" for="voiceToggle">
+            <span class="toggle-switch">
               <input type="checkbox" id="voiceToggle" />
               <span class="toggle-slider">
                 <span class="toggle-label-left">
@@ -126,9 +126,9 @@
                   <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd" /></svg>
                 </span>
               </span>
-            </label>
+            </span>
           </div>
-        </div>
+        </label>
 
         <!-- Phase View Toggle -->
         <button class="control-card flex items-center justify-between text-left hover:bg-white/10 transition-colors cursor-pointer group" id="phaseSwapBtn">
