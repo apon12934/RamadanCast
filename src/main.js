@@ -60,7 +60,7 @@ const STRINGS = {
 // ─── State ───
 const state = {
   lang: 'bn',
-  voiceEnabled: true,
+  voiceEnabled: false,
   timerStarted: false,
   lastAnnouncedMinute: -1,
   countdownInterval: null,
@@ -88,7 +88,7 @@ function cacheDom() {
     'subtitle', 'dateLabel', 'currentDate', 'sehriLabel', 'sehriTime',
     'countdownLabel', 'countdownDisplay', 'hours', 'minutes', 'seconds',
     'statusMessage', 'progressBar', 'langToggle', 'voiceToggle',
-    'currentLangLabel', 'voiceStatusLabel', 'welcomeOverlay', 'startExperienceBtn',
+    'currentLangLabel', 'voiceStatusLabel',
     'installBtn', 'phaseSwapBtn', 'phaseSwapLabel', 'phaseCurrentLabel'
   ];
   ids.forEach((id) => { els[id] = $(id); });
@@ -541,22 +541,6 @@ function init() {
   state.countdownInterval = setInterval(() => {
     updateCountdown();
   }, 1000);
-
-  // ─── Premium Welcome Experience (Audio Unlock) ───
-  els.startExperienceBtn.addEventListener('click', () => {
-    console.log("Audio system unlocked via Welcome Overlay.");
-
-    els.welcomeOverlay.classList.add('fade-out');
-
-    setTimeout(() => {
-      els.welcomeOverlay.remove();
-    }, 1000);
-
-    if (state.voiceEnabled) {
-      state.lastAnnouncedMinute = -1;
-      updateCountdown();
-    }
-  }, { once: true });
 
   // ─── Event Listeners ───
 
