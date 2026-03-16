@@ -415,7 +415,8 @@ function updateCountdown() {
   }
 }
 
-// ─── Voice System (Unofficial Google TTS) ───
+// ─── Voice System ───
+const GOOGLE_TTS_API_KEY = "";
 let activeAudio = null;
 
 async function speak(text) {
@@ -426,21 +427,57 @@ async function speak(text) {
     activeAudio = null;
   }
 
-  const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
-
   try {
-    const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
-    activeAudio = new Audio(url);
+    if (!GOOGLE_TTS_API_KEY) throw new Error('No API key');
 
-    activeAudio.onended = () => {
-      activeAudio = null;
-    };
+    // Step A: Premium Google Cloud TTS
+    const voiceName = state.lang === 'bn' ? 'bn-BD-Wavenet-A' : 'en-US-Journey-D';
+    const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
+
+    const res = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input: { text },
+          voice: { languageCode: langCode, name: voiceName },
+          audioConfig: { audioEncoding: 'MP3' },
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error(`Cloud TTS HTTP ${res.status}`);
+
+    const data = await res.json();
+    if (!data.audioContent) throw new Error('No audioContent in response');
+
+    const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+    activeAudio = new Audio(audioSrc);
+    activeAudio.onended = () => { activeAudio = null; };
 
     await activeAudio.play().catch(e => {
       if (e.name !== 'AbortError') throw e;
     });
-  } catch (error) {
-    console.error('TTS Playback failed:', error);
+
+    console.log('[TTS] Premium Cloud voice played.');
+  } catch (premiumError) {
+    // Step B: Bulletproof fallback — Google Translate TTS
+    console.warn('[TTS] Premium failed, using fallback:', premiumError.message);
+    try {
+      const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
+      const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
+      activeAudio = new Audio(url);
+      activeAudio.onended = () => { activeAudio = null; };
+
+      await activeAudio.play().catch(e => {
+        if (e.name !== 'AbortError') throw e;
+      });
+
+      console.log('[TTS] Fallback voice played.');
+    } catch (fallbackError) {
+      console.error('[TTS] Fallback also failed:', fallbackError);
+    }
   }
 }
 
