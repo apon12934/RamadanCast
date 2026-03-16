@@ -75,7 +75,6 @@ const state = {
   sehriTimeStr: null, // "HH:MM" string
   iftarTimeStr: null, // "HH:MM" string
   hijriDate: null,    // { day, month, year, monthEn }
-  gregorianDate: null,
   midnightTimeout: null,
 };
 
@@ -146,39 +145,38 @@ async function fetchTodayTimings(date = new Date()) {
     state.sehriTime = parseTimeForDate(state.sehriTimeStr, date);
     state.iftarTime = parseTimeForDate(state.iftarTimeStr, date);
 
-    // Parse Hijri date - Bangladesh moon sighting is typically 1 day behind API default
-    if (apiDate?.hijri) {
-      let d = parseInt(apiDate.hijri.day) - 1;
-      let m = apiDate.hijri.month.en;
-      let mNum = parseInt(apiDate.hijri.month.number);
-      let y = parseInt(apiDate.hijri.year);
+    // Only update the Islamic/Gregorian display date when fetching for today
+    // (chaining to tomorrow for the countdown must never shift the visible date)
+    const today = new Date();
+    const isToday = date.getFullYear() === today.getFullYear() &&
+                    date.getMonth()    === today.getMonth()    &&
+                    date.getDate()     === today.getDate();
 
-      // Handle underflow if it is the 1st of the month
-      if (d <= 0) {
-        d = 29; // Rough fallback, assume previous month has 29 days
-        mNum = mNum - 1 === 0 ? 12 : mNum - 1;
-        if (mNum === 8) m = 'Shaʿbān';
-        if (mNum === 9) m = 'Ramaḍān';
-        if (mNum === 12) y -= 1;
+    if (isToday) {
+      // Parse Hijri date - Bangladesh moon sighting is typically 1 day behind API default
+      if (apiDate?.hijri) {
+        let d = parseInt(apiDate.hijri.day) - 1;
+        let m = apiDate.hijri.month.en;
+        let mNum = parseInt(apiDate.hijri.month.number);
+        let y = parseInt(apiDate.hijri.year);
+
+        // Handle underflow if it is the 1st of the month
+        if (d <= 0) {
+          d = 29; // Rough fallback, assume previous month has 29 days
+          mNum = mNum - 1 === 0 ? 12 : mNum - 1;
+          if (mNum === 8) m = 'Shaʿbān';
+          if (mNum === 9) m = 'Ramaḍān';
+          if (mNum === 12) y -= 1;
+        }
+
+        state.hijriDate = {
+          day: d,
+          month: m,
+          monthAr: apiDate.hijri.month.ar,
+          monthNumber: mNum,
+          year: y,
+        };
       }
-
-      state.hijriDate = {
-        day: d,
-        month: m,
-        monthAr: apiDate.hijri.month.ar,
-        monthNumber: mNum,
-        year: y,
-      };
-    }
-
-    // Parse Gregorian date
-    if (apiDate?.gregorian) {
-      const g = apiDate.gregorian;
-      state.gregorianDate = new Date(
-        Number(g.year), Number(g.month.number) - 1, Number(g.day)
-      );
-    } else {
-      state.gregorianDate = new Date();
     }
 
     state.isLoading = false;
@@ -332,12 +330,10 @@ function updateLabels() {
     document.body.classList.remove('lang-bn');
   }
 
-  // Update date display
-  if (state.gregorianDate) {
-    els.currentDate.textContent = state.lang === 'bn'
-      ? formatDateDisplayBn(state.gregorianDate)
-      : formatDateDisplay(state.gregorianDate);
-  }
+  // Update date display — always show the real current date, never tomorrow's
+  els.currentDate.textContent = state.lang === 'bn'
+    ? formatDateDisplayBn(new Date())
+    : formatDateDisplay(new Date());
 
   // Update the time display for the active phase
   const timeStr = state.phase === 'sehri' ? state.iftarTimeStr : state.sehriTimeStr;
