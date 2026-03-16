@@ -442,9 +442,10 @@ function updateCountdown() {
   // Voice announcement (every 1 minute)
   if (state.voiceEnabled && state.timerStarted && totalMin !== state.lastAnnouncedMinute && totalMin >= 0) {
     state.lastAnnouncedMinute = totalMin;
+    const announceMin = totalMin + (diff % 60000 > 0 ? 1 : 0); // round up: 46:59 → "47 mins"
     const announceStr = state.phase === 'sehri'
-      ? STRINGS[state.lang].announceSehri(totalMin)
-      : STRINGS[state.lang].announceIftar(totalMin);
+      ? STRINGS[state.lang].announceSehri(announceMin)
+      : STRINGS[state.lang].announceIftar(announceMin);
     speak(announceStr);
   }
 }
