@@ -418,27 +418,22 @@ function updateCountdown() {
 // ─── Voice System ───
 const GOOGLE_TTS_API_KEY = "";
 let activeAudio = null;
+let speakGen = 0; // Incremented on every new speak() call to cancel stale ones
 
-function speakWithSynthesis(text, lang) {
+function speakWithSynthesis(text, lang, gen) {
   return new Promise((resolve, reject) => {
-    if (!window.speechSynthesis) return reject(new Error('speechSynthesis not supported'));
-
-    window.speechSynthesis.cancel();
+    if (!window.speechSynthesis) return reject(new Error('speechSynthesis unavailable'));
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'bn' ? 'bn-BD' : 'en-US';
     utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-
-    // Try to pick a good voice for the language
-    const voices = window.speechSynthesis.getVoices();
-    const langPrefix = lang === 'bn' ? 'bn' : 'en';
-    const match = voices.find(v => v.lang.startsWith(langPrefix) && !v.localService)
-      || voices.find(v => v.lang.startsWith(langPrefix));
-    if (match) utterance.voice = match;
 
     utterance.onend = () => resolve();
-    utterance.onerror = (e) => reject(new Error(`SpeechSynthesis error: ${e.error}`));
+    utterance.onerror = (e) => {
+      // "interrupted" means a newer speak() call cancelled us — not a real error
+      if (e.error === 'interrupted' || speakGen !== gen) return resolve();
+      reject(new Error(`SpeechSynthesis: ${e.error}`));
+    };
 
     window.speechSynthesis.speak(utterance);
   });
@@ -447,11 +442,10 @@ function speakWithSynthesis(text, lang) {
 async function speak(text) {
   if (!state.voiceEnabled) return;
 
-  // Stop any active audio or speech
-  if (activeAudio) {
-    activeAudio.pause();
-    activeAudio = null;
-  }
+  const gen = ++speakGen;
+
+  // Stop any currently playing audio/speech
+  if (activeAudio) { activeAudio.pause(); activeAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 
   // Tier 1: Premium Google Cloud TTS (only if API key is set)
@@ -474,46 +468,39 @@ async function speak(text) {
       );
 
       if (!res.ok) throw new Error(`Cloud TTS HTTP ${res.status}`);
-
       const data = await res.json();
-      if (!data.audioContent) throw new Error('No audioContent in response');
+      if (!data.audioContent) throw new Error('No audioContent');
+      if (gen !== speakGen) return; // Superseded — bail silently
 
       const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
       activeAudio = new Audio(audioSrc);
       activeAudio.onended = () => { activeAudio = null; };
-
-      await activeAudio.play().catch(e => {
-        if (e.name !== 'AbortError') throw e;
-      });
-
-      console.log('[TTS] Tier 1: Premium Cloud voice played.');
+      await activeAudio.play().catch(e => { if (e.name !== 'AbortError') throw e; });
       return;
     } catch (err) {
+      if (gen !== speakGen) return;
       console.warn('[TTS] Tier 1 failed:', err.message);
     }
   }
 
   // Tier 2: Web Speech API (free, built into the browser)
+  if (gen !== speakGen) return;
   try {
-    await speakWithSynthesis(text, state.lang);
-    console.log('[TTS] Tier 2: Web Speech API voice played.');
+    await speakWithSynthesis(text, state.lang, gen);
     return;
   } catch (err) {
+    if (gen !== speakGen) return; // Superseded — do NOT fall through to Tier 3
     console.warn('[TTS] Tier 2 failed:', err.message);
   }
 
-  // Tier 3: Google Translate TTS (last resort)
+  // Tier 3: Google Translate TTS (last resort — only reached on real errors)
+  if (gen !== speakGen) return;
   try {
     const langCode = state.lang === 'bn' ? 'bn-BD' : 'en-US';
     const url = `/api/tts?ie=UTF-8&client=tw-ob&tl=${langCode}&q=${encodeURIComponent(text)}`;
     activeAudio = new Audio(url);
     activeAudio.onended = () => { activeAudio = null; };
-
-    await activeAudio.play().catch(e => {
-      if (e.name !== 'AbortError') throw e;
-    });
-
-    console.log('[TTS] Tier 3: Google Translate fallback played.');
+    await activeAudio.play().catch(e => { if (e.name !== 'AbortError') throw e; });
   } catch (err) {
     console.error('[TTS] All tiers failed:', err);
   }
