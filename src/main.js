@@ -128,6 +128,17 @@ function formatDateForAPI(date) {
   return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
 }
 
+// ─── Timings Cache (localStorage) ───
+function getCachedTimings(dateStr) {
+  try {
+    const raw = localStorage.getItem('rc_timings_' + dateStr);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function setCachedTimings(dateStr, data) {
+  try { localStorage.setItem('rc_timings_' + dateStr, JSON.stringify(data)); } catch {}
+}
+
 // ─── Aladhan API Fetch ───
 async function fetchTodayTimings(date = new Date()) {
   state.isLoading = true;
@@ -135,15 +146,19 @@ async function fetchTodayTimings(date = new Date()) {
   updateLoadingUI();
 
   try {
-    const response = await fetch(`${API_BASE}/${formatDateForAPI(date)}?${API_PARAMS}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const json = await response.json();
+    const dateStr = formatDateForAPI(date);
+    let apiData = getCachedTimings(dateStr);
 
-    if (json.code !== 200 || !json.data?.timings) {
-      throw new Error('Invalid API response');
+    if (!apiData) {
+      const response = await fetch(`${API_BASE}/${dateStr}?${API_PARAMS}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const json = await response.json();
+      if (json.code !== 200 || !json.data?.timings) throw new Error('Invalid API response');
+      apiData = json.data;
+      setCachedTimings(dateStr, apiData);
     }
 
-    const { timings, date: apiDate } = json.data;
+    const { timings, date: apiDate } = apiData;
 
     // Parse times (using IFB Tuned Times)
     state.sehriTimeStr = timings.Fajr;  // IFB Sehri is Fajr time tuned by -1 min
