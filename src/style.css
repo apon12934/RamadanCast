@@ -160,7 +160,7 @@ body.lang-bn .countdown-segment {
 
 #progressBar {
   background: var(--progress-gradient);
-  transition: width 1s linear, background 1.5s ease;
+  transition: width 400ms linear, background 1.5s ease;
 }
 
 .crescent-path {
