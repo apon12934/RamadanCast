@@ -410,6 +410,7 @@ function updateCountdown() {
       state.phase = 'iftar';
       state.targetTime = state.iftarTime;
       state.lastAnnouncedMinute = -1;
+      _lastProgressMs = 0;  // force immediate progress bar update
       updateLabels();
       updateTheme();
       return; // next tick picks it up
@@ -602,6 +603,7 @@ function init() {
 
       determineAndSetPhase();
       state.lastAnnouncedMinute = -1;
+      _lastProgressMs = 0;  // force immediate progress bar update
       updateLabels();
       updateCountdown();
     });
