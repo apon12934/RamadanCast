@@ -26,6 +26,8 @@ const STRINGS = {
     loading: 'Fetching prayer times…',
     apiError: 'Unable to sync live times. Please check your connection.',
     waitingTomorrow: 'Today\'s times have ended. Refreshing at midnight…',
+    sehriEnded: 'Sehri time has ended. May Allah accept your fast.',
+    iftarStarted: 'It\'s Iftar time! You may break your fast now.',
     phaseSwapLabel: 'Switch To',
     sehriPhaseLabel: 'Sehri',
     iftarPhaseLabel: 'Iftar',
@@ -51,6 +53,8 @@ const STRINGS = {
     loading: 'নামাজের সময় সংগ্রহ হচ্ছে…',
     apiError: 'সময় সিঙ্ক করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।',
     waitingTomorrow: 'আজকের সময় শেষ হয়েছে। মধ্যরাতে রিফ্রেশ হবে…',
+    sehriEnded: 'সেহরির সময় শেষ। আল্লাহ আপনার রোজা কবুল করুন।',
+    iftarStarted: 'ইফতারের সময় হয়েছে! এখন রোজা ভাঙতে পারেন।',
     phaseSwapLabel: 'পরিবর্তন করুন',
     sehriPhaseLabel: 'সেহরি',
     iftarPhaseLabel: 'ইফতার',
@@ -63,6 +67,7 @@ const state = {
   voiceEnabled: false,
   timerStarted: false,
   lastAnnouncedMinute: -1,
+  phaseEndAnnounced: false,
   countdownInterval: null,
   targetTime: null,
   phase: 'sehri', // 'sehri' or 'iftar'
@@ -200,6 +205,7 @@ async function fetchTodayTimings(date = new Date()) {
 
     state.isLoading = false;
     state.apiError = null;
+    state.phaseEndAnnounced = false;  // reset for new data
 
     // Determine the active phase and start/continue countdown
     determineAndSetPhase();
@@ -407,16 +413,25 @@ function updateCountdown() {
     // Phase ended — transition to next phase
     if (state.phase === 'sehri' && state.iftarTime && now < state.iftarTime) {
       // Sehri ended, switch to Iftar countdown
+      if (state.voiceEnabled && !state.phaseEndAnnounced) {
+        state.phaseEndAnnounced = true;
+        speak(STRINGS[state.lang].sehriEnded);
+      }
       state.phase = 'iftar';
       state.targetTime = state.iftarTime;
       state.lastAnnouncedMinute = -1;
+      state.phaseEndAnnounced = false;  // reset for next phase
       _lastProgressMs = 0;  // force immediate progress bar update
       updateLabels();
       updateTheme();
       return; // next tick picks it up
     }
 
-    // Iftar ended — chain to next day immediately
+    // Iftar ended — announce and chain to next day
+    if (state.voiceEnabled && !state.phaseEndAnnounced) {
+      state.phaseEndAnnounced = true;
+      speak(STRINGS[state.lang].iftarStarted);
+    }
     if (!state.isLoading) {
       const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       fetchTodayTimings(tomorrow);
@@ -603,6 +618,7 @@ function init() {
 
       determineAndSetPhase();
       state.lastAnnouncedMinute = -1;
+      state.phaseEndAnnounced = false;  // reset for manual phase swap
       _lastProgressMs = 0;  // force immediate progress bar update
       updateLabels();
       updateCountdown();
