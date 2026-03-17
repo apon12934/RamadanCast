@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://ramadancast.netlify.app">🔗 Live App</a> •
+  <a href="https://ramadancast.ddns.net">🔗 Live App</a> •
   <a href="#features">✨ Features</a> •
   <a href="#tech-stack">🛠 Tech Stack</a> •
   <a href="#getting-started">🚀 Getting Started</a>
