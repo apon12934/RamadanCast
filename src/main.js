@@ -471,7 +471,7 @@ async function speak(text) {
   try {
     if (!GOOGLE_TTS_API_KEY) throw new Error('No API key');
 
-    const voiceName = state.lang === 'bn' ? 'bn-IN-Wavenet-A' : 'en-US-Wavenet-D';
+    const voiceName = state.lang === 'bn' ? 'bn-IN-Wavenet-A' : 'en-US-Journey-O';
     const langCode  = state.lang === 'bn' ? 'bn-IN'           : 'en-US';
 
     const res = await fetch(
