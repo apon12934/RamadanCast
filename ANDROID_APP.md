@@ -4,9 +4,17 @@
 
 A complete Android app version of RamadanCast has been created in the `android-app/` directory. This is a **native Android wrapper** around the web app using [Capacitor](https://capacitorjs.com/).
 
-## ⚠️ Important Note
+## 🎯 Quick Download (No PC Required!)
 
-Due to network restrictions in the CI environment, the APK could not be built automatically. However, **everything is ready for you to build it locally** in just a few simple steps!
+**Don't have access to your PC?** You can download a pre-built APK directly from GitHub Actions!
+
+👉 **[Click here for download instructions](DOWNLOAD_APK.md)**
+
+Or go to: [GitHub Actions](https://github.com/apon12934/RamadanCast/actions) → "Build Android APK" workflow → Download from artifacts
+
+---
+
+## 🔨 Build It Yourself (If You Have a PC)
 
 ## 🎯 What's Ready
 
