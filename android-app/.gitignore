@@ -1,0 +1,35 @@
+# Node modules (can be reinstalled with npm install)
+node_modules/
+package-lock.json
+
+# Android build outputs
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/.DS_Store
+
+# APK outputs (will be excluded from git)
+apk-output/
+*.apk
+*.aab
+
+# Capacitor
+.capacitor/
+android/.cxx/
+
+# IDE
+.vscode/
+.idea/
+
+# Keystore files (important - don't commit these!)
+*.keystore
+*.jks
+keystore.properties
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
