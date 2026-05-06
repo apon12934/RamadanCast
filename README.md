@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://ramadancast.ddns.net">🔗 Live App</a> •
+  <a href="https://ramadancast.ddns.net">🔗 Live App (Primary)</a> •
+  <a href="https://ramadancast.netlify.app">🔗 Netlify Mirror</a> •
   <a href="#features">✨ Features</a> •
   <a href="#tech-stack">🛠 Tech Stack</a> •
   <a href="#getting-started">🚀 Getting Started</a>
@@ -31,15 +32,15 @@ It works year-round — not just during Ramadan.
 |---|---|
 | ⏱️ **Always-on Countdown** | Perpetually running timer — auto-switches from Sehri → Iftar → next Sehri with no midnight wait |
 | 🔄 **Phase Toggle** | Instantly swap between Sehri and Iftar views with a single tap on the full card |
-| 🗣️ **AI Voice Alerts** | Minute-by-minute announcements via Google Cloud TTS — says "1 hour 20 minutes" when ≥ 60 min |
+| 🗣️ **AI Voice Alerts** | Minute-by-minute announcements via Google Cloud TTS — says "1 hour 20 minutes" when ≥ 60 min, plus event completion alerts ("Sehri has ended", "It's Iftar time") in both English and Bangla |
 | 🔇 **Voice Off by Default** | Audio is off until the user turns it on, respecting browser autoplay policies |
 | 🌐 **Bilingual UI** | Full English ↔ বাংলা toggle with native fonts; labels, dates, and voice all switch |
 | 🕌 **IFB Accurate** | Tuned to match the Islamic Foundation Bangladesh's official Sehri/Iftar times (Fajr −1 min, Maghrib +2 min) |
 | 🌗 **Islamic Day Awareness** | Hijri date advances at Maghrib (not midnight) — correct per Islamic timekeeping |
 | 🎨 **Dynamic Themes** | Deep purple night theme (Sehri) ↔ warm sunset theme (Iftar) with smooth transitions |
 | 📱 **Installable PWA** | Install as a native app on Android, iOS, and Desktop |
-| 📊 **Progress Bar** | 24-hour window: 0% at start of countdown, 100% at event time |
-| 🔋 **Low-end Optimised** | DOM writes skipped when screen is off; display cache prevents redundant repaints |
+| 📊 **Fluid Progress Bar** | 24-hour window with fluid spring animations: 0% at start of countdown, 100% at event time |
+| 🔋 **Performance Optimised** | DOM writes skipped when screen is off, API response cached via `localStorage`, and non-blocking async Google font loading |
 | 📲 **Screen-wake Recovery** | Immediately re-announces current time the moment the screen turns back on |
 
 ---
